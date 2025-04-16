@@ -18,8 +18,8 @@ def load_images(filepath):
 def evaluate_performance(device, net, test_set=".\\dataset\\test_set", labels=".\\dataset\\test_set.csv"):
     y_true = []
     y_pred = []
-    # carica la label.
     LABELS = np.load(".\\dataset\\rcmalli_vggface_labels_v2.npy")
+    true_labels = {str(name).strip(): idx for idx, name in enumerate(LABELS)}
 
     with open(labels, "r", encoding="utf-8") as csvfile: # apri con la codifica corretta.
         reader = csv.reader(csvfile)
@@ -38,9 +38,9 @@ def evaluate_performance(device, net, test_set=".\\dataset\\test_set", labels=".
                 with torch.no_grad():
                     output = net(img_tensor.to(device))
                     # dato l'output ottieni la stringa corrispondente.
-                    predicted_class = LABELS[np.array(output[0].detach().cpu().numpy()).argmax()]
+                    predicted_class = np.array(output[0].detach().cpu().numpy()).argmax()
 
-                y_true.append(0)
+                y_true.append(true_labels[name])
                 y_pred.append(predicted_class)
                 print(name, predicted_class)
 

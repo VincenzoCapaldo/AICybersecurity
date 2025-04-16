@@ -4,7 +4,6 @@ import random
 import shutil
 
 
-
 def create_dataset(csv_file = 'test_set.csv', dataset_directory_origin = './vggface2_train/train',
     dataset_directory_destination = './test_set', number_img = 10):
     """
@@ -57,5 +56,4 @@ def create_dataset(csv_file = 'test_set.csv', dataset_directory_origin = './vggf
 
 
 if __name__ == "__main__":
-    #create_dataset()
-    print_true_labels()
+    create_dataset()
