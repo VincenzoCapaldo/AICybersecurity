@@ -5,7 +5,7 @@ import csv
 import numpy as np
 from PIL import Image
 from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score
 
 # pre-processa le immagini in modo compatibile con la rete.
 def load_images(filepath):
@@ -42,11 +42,10 @@ def evaluate_performance(device, net, test_set=".\\dataset\\test_set", labels=".
 
                 y_true.append(true_labels[name])
                 y_pred.append(predicted_class)
-                print(name, predicted_class)
+                #print(name, predicted_class, true_labels[name])
 
-    print("Report di classificazione:")
-    print(classification_report(y_true, y_pred))
-    print("Accuracy:", accuracy_score(y_true, y_pred))
+    print(f"Accuracy: {accuracy_score(y_true, y_pred)}")
+
     print("\nConfusion Matrix:")
     print(confusion_matrix(y_true, y_pred))
 
