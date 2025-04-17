@@ -1,3 +1,4 @@
 models/resnet50_ft_weight.pkl
 models/resnet50_scratch_weight.pkl
 dataset/vggface2_train/train/*
+__pycache__/*
