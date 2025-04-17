@@ -1,11 +1,8 @@
 import os
 import pickle
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import math
-from torchvision import transforms
 from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
 
 
@@ -190,7 +187,7 @@ def get_NN1(device=torch.device("cpu")):
 
 
 def get_NN2(device=torch.device("cpu"), model_path='./models/resnet50_ft_weight.pkl'):
-    #model_path='./models/resnet50_scratch_weight.pkl_weight.pkl'
+    model_path='./models/resnet50_scratch_weight.pkl'
     if not os.path.exists('./models'):
         os.makedirs('./models')
     model = resnet50(num_classes=8631, include_top=True)
@@ -201,21 +198,7 @@ def get_NN2(device=torch.device("cpu"), model_path='./models/resnet50_ft_weight.
     return model
 
 
-def process_image(image, target_size=(224, 224), use_padding=True):
-    if use_padding:
-        current_height, current_width = image.shape[1], image.shape[2]
-        pad_height = (target_size[0] - current_height) // 2
-        pad_width = (target_size[1] - current_width) // 2
-        padded_image = F.pad(image, (pad_width, pad_width, pad_height, pad_height), mode='constant', value=0)
-        return padded_image
-    else:
-        transform = transforms.Compose([
-            transforms.Resize(target_size),
-            transforms.ToTensor()
-        ])
-        return transform(image)
-
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     #nn1 = get_NN1(device)
     #nn2 = get_NN2(device)
