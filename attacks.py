@@ -2,22 +2,11 @@ import numpy as np
 import torch
 from sklearn.metrics import accuracy_score
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
+from utils import compute_accuracy
 
-num_classes = 8631
+NUM_CLASSES = 8631
 
-def compute_accuracy(classifier, x_test, y_test):
-    # Predizioni del modello (output con le probabilità per ogni classe)
-    y_pred = classifier.predict(x_test)  # Shape: (N, 10)
-
-    # Convertiamo da probabilità a etichette (argmax sulle colonne)
-    y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
-
-    # Calcoliamo l'accuratezza
-    accuracy = accuracy_score(y_pred_labels, y_test)
-    return accuracy
-
-
-def fgsm(classifier, epsilon_values, test_images, test_labels, targeted, target_class_values):
+def fgsm(classifier, epsilon_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = []
     average_perturbations = []
     targeted_accuracies = []
@@ -31,7 +20,7 @@ def fgsm(classifier, epsilon_values, test_images, test_labels, targeted, target_
             for target_class in target_class_values:
                 # Generazione delle immagini avversarie
                 targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
-                one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, num_classes=num_classes).numpy()
+                one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
                 test_images_adv = attack.generate(test_images, one_hot_targeted_labels)
 
                 # Calcolo dell'accuracy sulle immagini modificate rispetto alle label vere
@@ -60,7 +49,7 @@ def fgsm(classifier, epsilon_values, test_images, test_labels, targeted, target_
     return accuracies, average_perturbations, targeted_accuracies
 
 
-def bim(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted, target_class_values):
+def bim(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = []
     average_perturbations = []
     targeted_accuracies = []
@@ -76,7 +65,7 @@ def bim(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_i
                     for target_class in target_class_values:
                         # Generazione delle immagini avversarie
                         targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
-                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, num_classes=num_classes).numpy()
+                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
                         test_images_adv = attack.generate(test_images, one_hot_targeted_labels)
 
                         # Calcolo dell'accuracy sulle immagini modificate rispetto alle label vere
@@ -105,7 +94,7 @@ def bim(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_i
     return accuracies, average_perturbations, targeted_accuracies
 
 
-def pgd(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted, target_class_values):
+def pgd(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = []
     average_perturbations = []
     targeted_accuracies = []
@@ -121,7 +110,7 @@ def pgd(classifier, epsilon_values, epsilon_step_values, max_iter_values, test_i
                     for target_class in target_class_values:
                         # Generazione delle immagini avversarie
                         targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
-                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, num_classes=num_classes).numpy()
+                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
                         test_images_adv = attack.generate(test_images, one_hot_targeted_labels)
 
                         # Calcolo dell'accuracy sulle immagini modificate rispetto alle label vere
@@ -182,7 +171,7 @@ def deepfool(classifier, epsilon_values, max_iter_values, test_images, test_labe
     return accuracies, average_perturbations
 
 
-def carlini_wagner(classifier, confidence_values, max_iter_values, learning_rate_values, test_images, test_labels, targeted, target_class_values):
+def carlini_wagner(classifier, confidence_values, max_iter_values, learning_rate_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = []
     average_perturbations = []
     targeted_accuracies = []
@@ -198,7 +187,7 @@ def carlini_wagner(classifier, confidence_values, max_iter_values, learning_rate
                     for target_class in target_class_values:
                         # Generazione delle immagini avversarie
                         targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
-                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, num_classes=num_classes).numpy()
+                        one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
                         test_images_adv = attack.generate(test_images, one_hot_targeted_labels)
 
                         # Calcolo della massima perturbazione L_inf per ogni immagine

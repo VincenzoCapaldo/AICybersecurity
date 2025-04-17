@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -45,3 +46,34 @@ def show_image(image):
     plt.imshow(image)
     plt.axis('off')  # per togliere gli assi
     plt.show()
+
+def plot_accuracy(title, x_title, x, average_perturbations, accuracies, targeted=False, targeted_accuracies=None):
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+
+    fig.suptitle(title, fontsize=16)
+
+    # Accuracy and Targeted Accuracy vs x
+    axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
+    if targeted:
+        axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[0].legend(["Accuracy", "Targeted Accuracy"])
+    else:
+        axes[0].legend(["Accuracy"])
+    axes[0].set_xlabel(x_title)
+    axes[0].grid()
+
+    # Accuracy and Targeted Accuracy vs Average Perturbation
+    axes[1].plot(average_perturbations, accuracies, marker='o', linestyle='-', color='b')
+    if targeted:
+        axes[1].plot(average_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[1].legend(["Accuracy", "Targeted Accuracy"])
+    else:
+        axes[1].legend(["Accuracy"])
+    axes[1].set_xlabel("Average Perturbation")
+    axes[1].grid()
+
+    plt.tight_layout()
+    filename = f"{title}.png"
+    save_path = os.path.join("./plot", filename)
+    plt.savefig(save_path)
+    print(f"Plot {title}.png salvato.")
