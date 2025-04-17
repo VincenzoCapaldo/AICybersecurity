@@ -187,7 +187,7 @@ def get_NN1(device=torch.device("cpu")):
 
 
 def get_NN2(device=torch.device("cpu"), model_path='./models/resnet50_ft_weight.pkl'):
-    #model_path='./models/resnet50_scratch_weight.pkl_weight.pkl'
+    model_path='./models/resnet50_scratch_weight.pkl'
     if not os.path.exists('./models'):
         os.makedirs('./models')
     model = resnet50(num_classes=8631, include_top=True)
@@ -199,6 +199,6 @@ def get_NN2(device=torch.device("cpu"), model_path='./models/resnet50_ft_weight.
 
 
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     #nn1 = get_NN1(device)
     #nn2 = get_NN2(device)

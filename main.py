@@ -3,11 +3,10 @@ import torch
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
 from dataset import get_test_set
-from utils import compute_accuracy
+from utils import compute_accuracy, process_images, show_image
 
 
 NUM_CLASSES = 8631
-
 
 
 def main(device):
@@ -38,17 +37,21 @@ def main(device):
     )
 
     # Carico il test_set
-    dataloader, test_images, test_labels = get_test_set()
+    dataloader, test_images_nn1, test_labels = get_test_set()
+    test_images_nn2 = process_images(test_images_nn1, use_padding=False)  # Preprocesso le immagini per il secondo classificatore
+    #show_image(test_images_nn2[4])
+    #print(f"Test images shape for NN1: {test_images_nn1.shape}")
+    #print(f"Test images shape for NN2: {test_images_nn2.shape}")
 
     # calcolo delle performance dei classificatori sui dati clean
-    accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
-    print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
-    #accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images, test_labels)
-    #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
+    #accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images_nn1, test_labels)
+    #print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
+    accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images_nn2, test_labels)
+    print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
 
 
 
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
     main(device)
