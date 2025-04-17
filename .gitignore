@@ -2,7 +2,3 @@ models/resnet50_ft_weight.pkl
 models/resnet50_scratch_weight.pkl
 <<<<<<< HEAD
 dataset/vggface2_train/train/*
-=======
-dataset/vggface2_train/*
-__pycache__/*
->>>>>>> bbc8e34a11ed41356db68cb3278e99a54829fbf0
