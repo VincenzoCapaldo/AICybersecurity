@@ -242,6 +242,7 @@ def carlini_wagner(classifier, confidence_values, max_iter_values, learning_rate
 
     return accuracies, average_perturbations, targeted_accuracies
 
+#commento 
 
 
 
