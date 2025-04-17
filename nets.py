@@ -220,4 +220,4 @@ if __name__ == "__main__":
     nn1 = get_NN1(device)
     #nn2 = get_NN2(device)
 
-    # prova
+# prova
