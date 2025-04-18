@@ -281,7 +281,6 @@ def main():
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
     accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images_nn2, test_labels)
     print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
-    return
 
     # Avvia l'attacco selezionato
     if args.attack == "fgsm":
