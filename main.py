@@ -281,6 +281,7 @@ def main():
     # Calcolo delle performance dei classificatori sui dati clean
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
+    return
     #accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images_nn2, test_labels)
     #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
 
