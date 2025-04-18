@@ -4,7 +4,7 @@ import torch
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
 from dataset import get_test_set
-from utils import compute_accuracy, plot_accuracy, process_images, show_image
+from utils import *
 from attacks import fgsm, bim, pgd, deepfool, carlini_wagner
 
 NUM_CLASSES = 8631
@@ -25,17 +25,7 @@ def setup_classifiers(device):
         clip_values=(0.0, 1.0),
         device_type="gpu" if torch.cuda.is_available() else "cpu"
     )
-    classifierNN2 = PyTorchClassifier(
-        model=nn2,
-        loss=torch.nn.CrossEntropyLoss(),
-        optimizer=Adam(nn2.parameters(), lr=0.001),
-        input_shape=(3, 224, 224),
-        channels_first=True,
-        nb_classes=NUM_CLASSES,
-        clip_values=(0.0, 1.0),
-        device_type="gpu" if torch.cuda.is_available() else "cpu"
-    )
-    return classifierNN1, classifierNN2
+    return classifierNN1, nn2
 
         
 def run_fgsm(classifier, test_images, test_labels, test_set, targeted=False):
@@ -267,13 +257,13 @@ def main():
     print(f"Targeted attack: {args.targeted}")
 
     # Setup dei classificatori
-    classifierNN1, classifierNN2 = setup_classifiers(device)
+    classifierNN1, nn2 = setup_classifiers(device)
 
     # Carico il test_set
     test_set = get_test_set()
     _, test_images, test_labels = test_set.get_images()
 
-    #test_images_nn2 = process_images(test_images, use_padding=True)  # Preprocesso le immagini per il secondo classificatore
+    test_images_nn2 = process_images(test_images, use_padding=False)  # Preprocesso le immagini per il secondo classificatore
     #show_image(test_images_nn2[4])
     #print(f"Test images shape for NN1: {test_images.shape}")
     #print(f"Test images shape for NN2: {test_images_nn2.shape}")
@@ -281,8 +271,9 @@ def main():
     # Calcolo delle performance dei classificatori sui dati clean
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
-    #accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images_nn2, test_labels)
-    #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
+    accuracy_nn2_clean = evaluate_accuracy(nn2, test_images_nn2, test_labels, device)
+    print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
+    return
 
     # Avvia l'attacco selezionato
     if args.attack == "fgsm":

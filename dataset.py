@@ -4,18 +4,16 @@ import shutil
 import random
 import numpy as np
 from PIL import Image
+import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 
 # Classe per la gestione del dataset
 class FaceDataset(Dataset):
-    def __init__(self, images_dir, csv_path, label_map_path):
+    def __init__(self, images_dir="./dataset/test_set", csv_path="./dataset/test_set.csv", 
+                 label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"):
         self.images_dir = images_dir
-        self.transform = transforms.Compose([
-            transforms.Resize((160, 160)),
-            transforms.ToTensor()
-        ])
         self.samples = []
 
         # Carica le etichette vere (str -> int)
@@ -41,10 +39,10 @@ class FaceDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
-        image = Image.open(img_path).convert("RGB")
-        if self.transform:
-            image = self.transform(image)
-        return image, label
+        image = Image.open(img_path)
+        image = transforms.Resize((160, 160))(image)
+        image = np.array(image, dtype=np.uint8)
+        return transforms.ToTensor()(image), label
 
     def get_true_label(self, name):
         return self.true_labels.get(name)
@@ -58,7 +56,7 @@ class FaceDataset(Dataset):
 
         for images, labels in dataloader:
             test_images.append(images.numpy())
-            test_labels.append(labels.numpy())
+            test_labels.append(labels)
 
         test_images = np.concatenate(test_images, axis=0)
         test_labels = np.concatenate(test_labels, axis=0)
@@ -67,12 +65,7 @@ class FaceDataset(Dataset):
 
 def get_test_set():
     # Istanza del test_set
-    test_set = FaceDataset(
-        images_dir="./dataset/test_set",
-        csv_path="./dataset/test_set.csv",
-        label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"
-    )
-    return test_set
+    return FaceDataset()
 
 # Funzione per creare il dataset di test a partire da un file CSV
 def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img):
