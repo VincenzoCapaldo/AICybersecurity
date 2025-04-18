@@ -40,7 +40,9 @@ class FaceDataset(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
-        image = transforms.Resize((160, 160))(image)
+        #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
+        image = transforms.Resize(200)(image)
+        image = transforms.CenterCrop(160)(image)
         image = np.array(image, dtype=np.uint8)
         return transforms.ToTensor()(image), label
 
