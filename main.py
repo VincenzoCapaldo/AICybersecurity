@@ -284,7 +284,6 @@ def main():
     #accuracy_nn2_clean = compute_accuracy(classifierNN2, test_images_nn2, test_labels)
     #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
 
-
     # Avvia l'attacco selezionato
     if args.attack == "fgsm":
         run_fgsm(classifierNN1, test_images, test_labels, test_set, args.targeted)
