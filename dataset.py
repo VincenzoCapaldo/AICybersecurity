@@ -51,6 +51,18 @@ class FaceDataset(Dataset):
 
     def get_used_labels(self):
         return sorted({label for _, label in self.samples})
+    
+    def get_images(self):
+        dataloader = DataLoader(self, batch_size=32, shuffle=False)
+        test_images, test_labels = [], []
+
+        for images, labels in dataloader:
+            test_images.append(images.numpy())
+            test_labels.append(labels.numpy())
+
+        test_images = np.concatenate(test_images, axis=0)
+        test_labels = np.concatenate(test_labels, axis=0)
+        return dataloader, test_images, test_labels
 
 
 def get_test_set():
@@ -60,17 +72,7 @@ def get_test_set():
         csv_path="./dataset/test_set.csv",
         label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"
     )
-    dataloader = DataLoader(test_set, batch_size=32, shuffle=False)
-    test_images, test_labels = [], []
-
-    for images, labels in dataloader:
-        test_images.append(images.numpy())
-        test_labels.append(labels.numpy())
-
-    test_images = np.concatenate(test_images, axis=0)
-    test_labels = np.concatenate(test_labels, axis=0)
-    return dataloader, test_images, test_labels
-
+    return test_set
 
 # Funzione per creare il dataset di test a partire da un file CSV
 def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img):
