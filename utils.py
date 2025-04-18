@@ -13,7 +13,7 @@ def compute_accuracy(classifier, x_test, y_test):
 
     # Convertiamo da probabilità a etichette (argmax sulle colonne)
     y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
-    print("predizioni: ", y_pred_labels)
+    #print("predizioni: ", y_pred_labels)
 
     # Calcoliamo l'accuratezza
     accuracy = accuracy_score(y_pred_labels, y_test)
