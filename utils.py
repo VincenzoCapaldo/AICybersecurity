@@ -48,7 +48,7 @@ def show_image(image):
     plt.axis('off')  # per togliere gli assi
     plt.show()
 
-def plot_accuracy(title, x_title, x, average_perturbations, accuracies, targeted=False, targeted_accuracies=None):
+def plot_accuracy(title, x_title, x, max_perturbations, accuracies, targeted=False, targeted_accuracies=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
 
     fig.suptitle(title, fontsize=16)
@@ -57,22 +57,23 @@ def plot_accuracy(title, x_title, x, average_perturbations, accuracies, targeted
     axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
     if targeted:
         axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[0].legend(["Accuracy", "Targeted Accuracy"])
+        axes[0].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
     else:
-        axes[0].legend(["Accuracy"])
+        axes[0].legend(["Accuracy"], loc="upper right")
     axes[0].set_xlabel(x_title)
     axes[0].grid()
 
-    # Accuracy and Targeted Accuracy vs Average Perturbation
-    axes[1].plot(average_perturbations, accuracies, marker='o', linestyle='-', color='b')
+    # Accuracy and Targeted Accuracy vs Max Perturbations
+    axes[1].plot(max_perturbations, accuracies, marker='o', linestyle='-', color='b')
     if targeted:
-        axes[1].plot(average_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[1].legend(["Accuracy", "Targeted Accuracy"])
+        axes[1].plot(max_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[1].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
     else:
-        axes[1].legend(["Accuracy"])
-    axes[1].set_xlabel("Average Perturbation")
+        axes[1].legend(["Accuracy"], loc="upper right")
+    axes[1].set_xlabel("Max Perturbations")
+    axes[1].axvline(x=0.05, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
     axes[1].grid()
-
+    
     plt.tight_layout()
     filename = f"{title}.png"
     save_path = os.path.join("./plot", filename)
