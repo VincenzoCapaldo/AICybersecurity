@@ -41,9 +41,8 @@ class FaceDataset(Dataset):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
         image = transforms.Resize((160, 160))(image)
-        image = np.array(image, dtype=np.uint8)  # RGB numpy
-        image = torch.from_numpy(image).permute(2, 0, 1).float()  # [H,W,C] -> [C,H,W]
-        return image, torch.tensor(label, dtype=torch.long)
+        image = np.array(image, dtype=np.uint8)
+        return transforms.ToTensor()(image), label
 
     def get_true_label(self, name):
         return self.true_labels.get(name)
@@ -57,7 +56,7 @@ class FaceDataset(Dataset):
 
         for images, labels in dataloader:
             test_images.append(images.numpy())
-            test_labels.append(labels.numpy())
+            test_labels.append(labels)
 
         test_images = np.concatenate(test_images, axis=0)
         test_labels = np.concatenate(test_labels, axis=0)

@@ -1,10 +1,31 @@
 import os
 import numpy as np
 import torch
+from torch.autograd import no_grad
 import torch.nn.functional as F
 from sklearn.metrics import accuracy_score
 from torchvision import transforms
 import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+def evaluate_accuracy(model, images_list, labels_list, device):
+    model.eval()
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        labels = torch.tensor(labels_list, device=device)  # Converte la lista di label in tensor
+
+        # Passa tutte le immagini in un colpo solo
+        outputs = model(images_list.to(device))
+        _, predicted = torch.max(outputs, 1)
+
+        # Calcola la precisione
+        correct += (predicted == labels).sum().item()
+        total += labels.size(0)
+
+    accuracy = correct / total * 100
+    print(f"\nAccuracy: {accuracy:.2f}%")
 
 
 def compute_accuracy(classifier, x_test, y_test):
@@ -22,21 +43,25 @@ def compute_accuracy(classifier, x_test, y_test):
 
 def process_images(images, target_size=(224, 224), use_padding=True):
     processed_images = []
-    resize = transforms.Resize(target_size)
-    
+    mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1 ,1) # media dei canali BGR
     for image in images:
-        image = torch.from_numpy(image)  # Converti in tensore PyTorch
+        image = torch.from_numpy((image*255).astype(np.uint8))  # Converti in tensore PyTorch
         if use_padding:
             current_height, current_width = image.shape[1], image.shape[2]
             pad_height = (target_size[0] - current_height) // 2
             pad_width = (target_size[1] - current_width) // 2
-            padded_image = F.pad(image, (pad_width, pad_width, pad_height, pad_height), mode='constant', value=0)
-            processed_images.append(padded_image.numpy())  # Converti in NumPy
+            processed_img = F.pad(image, (pad_width, pad_width, pad_height, pad_height), mode='constant', value=0)
         else:
-            resized_image = resize(image)  # Applica Resize
-            processed_images.append(np.array(resized_image))  # Converti in NumPy
-
-    return np.stack(processed_images, axis=0)
+            processed_img = transforms.Resize(target_size)(image)    # Applica Resize
+        processed_img = processed_img.numpy()
+        processed_img = processed_img[[2, 1, 0], :, :].astype(np.float32) # RGB -> BGR
+        #print(processed_img[0,0,0])
+        #processed_img = processed_img.astype(np.float32)
+        processed_img -= mean_bgr
+        #print(processed_img[0,0,0])
+        processed_images.append(torch.from_numpy(processed_img).float()) 
+        
+    return torch.stack(processed_images, dim=0)
 
 
 def show_image(image):
