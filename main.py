@@ -91,7 +91,7 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
         epsilon_step = [0.01]
         max_iter = [5]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, True, target_class)
         plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -99,7 +99,7 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon = [0.025]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, True, target_class)
         plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -107,7 +107,7 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon = [0.025]
         epsilon_step = [0.01]
         max_iter_values = [1, 2, 5, 10, 20]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, True, target_class)
         plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -115,7 +115,7 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon = [0.025]
         epsilon_step = [0.01]
         max_iter = [5]
-        target_class_values = test_set.get_used_labels()
+        target_class_values = [test_set.get_used_labels()]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon, epsilon_step, max_iter, test_images, test_labels, True, target_class_values)
         plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Target Class and Max Perturbations", "Target Class", target_class_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -150,7 +150,7 @@ def run_pgd(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
         epsilon_step = [0.01]
         max_iter = [5]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, True, target_class)
         plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -158,7 +158,7 @@ def run_pgd(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon = [0.025]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, True, target_class)
         plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -166,7 +166,7 @@ def run_pgd(classifier, test_images, test_labels, test_set, targeted=False):
         epsilon = [0.025]
         epsilon_step = [0.01]
         max_iter_values = [1, 2, 5, 10, 20]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, True, target_class)
         plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -225,7 +225,7 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted=False):
         confidence_values =  [0.1, 0.5, 1, 2, 5, 10]
         max_iter = [5]
         learning_rate = [0.01]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = carlini_wagner(classifier, confidence_values, max_iter, learning_rate, test_images, test_labels, True, target_class)
         plot_accuracy("Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Confidence and Max Perturbations", "Confidence", confidence_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -233,7 +233,7 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted=False):
         confidence = [0.5]
         max_iter_values = [1, 2, 5, 7, 10]
         learning_rate = [0.01]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = carlini_wagner(classifier, confidence, max_iter_values, learning_rate, test_images, test_labels, True, target_class)
         plot_accuracy("Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -241,7 +241,7 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted=False):
         confidence = [0.5]
         max_iter = [5]
         learning_rate_values = [0.001, 0.005, 0.01, 0.05, 0.1]
-        target_class = test_set.get_true_label("Cristiano_Ronaldo")
+        target_class = [test_set.get_true_label("Cristiano_Ronaldo")]
         accuracies, max_perturbations, targeted_accuracy = carlini_wagner(classifier, confidence, max_iter, learning_rate_values, test_images, test_labels, True, target_class)
         plot_accuracy("Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations", "Learning Rate", learning_rate_values, max_perturbations, accuracies, True, targeted_accuracy)
 
@@ -257,7 +257,7 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted=False):
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on classifiers.")
     parser.add_argument("--attack", type=str, default="bim", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
-    parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
+    parser.add_argument("--targeted", type=bool, default=True, help="Run a targeted attack")
     args = parser.parse_args()
     
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -279,9 +279,9 @@ def main():
     # Calcolo delle performance dei classificatori sui dati clean
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
-    accuracy_nn2_clean = evaluate_accuracy(nn2, test_images_nn2, test_labels, device)
-    print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
-    return
+    #accuracy_nn2_clean = evaluate_accuracy(nn2, test_images_nn2, test_labels, device)
+    #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
+    #return
 
     # Avvia l'attacco selezionato
     if args.attack == "fgsm":
