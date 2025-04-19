@@ -246,7 +246,7 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on classifiers.")
-    parser.add_argument("--attack", type=str, default="cw", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
+    parser.add_argument("--attack", type=str, default="bim", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
     parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
     
@@ -271,9 +271,9 @@ def main():
     # Calcolo delle performance dei classificatori sui dati clean
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
-    accuracy_nn2_clean = evaluate_accuracy(nn2, test_images_nn2, test_labels, device)
-    print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
-    return
+    #accuracy_nn2_clean = evaluate_accuracy(nn2, test_images_nn2, test_labels, device)
+    #print(f"Accuracy del classificatore NN2 su dati clean: {accuracy_nn2_clean}")
+    #return
 
     # Avvia l'attacco selezionato
     if args.attack == "fgsm":
