@@ -55,7 +55,7 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, accuracy_cle
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title, fontsize=16)
 
-    # Valori sui dati clean
+    # Aggiunta dell'accuracy e della targeted accuracy sui dati clean
     if not x_title == "Target Class":
         x.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
