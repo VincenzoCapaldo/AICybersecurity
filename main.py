@@ -125,21 +125,21 @@ def run_pgd(classifier, test_images, test_labels, test_set, targeted, accuracy_c
         epsilon_step = [0.01]
         max_iter = [5]
         accuracies, max_perturbations, _ = pgd(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted)
-        plot_accuracy("PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
         # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione media (con epsilon e max_iter fissati)
         epsilon = [0.025]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
         accuracies, max_perturbations, _ = pgd(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted)
-        plot_accuracy("PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
         # Calcolo dell'accuracy al variare di max_iter e della perturbazione media (con epsilon e epsilon_step fissati)
         epsilon = [0.025]
         epsilon_step = [0.01]
         max_iter_values = [1, 2, 5, 10, 20]
         accuracies, max_perturbations, _ = pgd(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted)
-        plot_accuracy("PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
     ### Targeted (error-specific) PGD attack
     else:
@@ -148,21 +148,21 @@ def run_pgd(classifier, test_images, test_labels, test_set, targeted, accuracy_c
         epsilon_step = [0.01]
         max_iter = [5]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted, target_class)
-        plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon_step e della perturbazione media (con epsilon, max_iter e target_class fissati)
         epsilon = [0.05]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted, target_class)
-        plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di max_iter e della perturbazione media (con epsilon, epsilon_step e target_class fissati)
         epsilon = [0.05]
         epsilon_step = [0.01]
         max_iter_values = [1, 2, 5, 10, 20]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted, target_class)
-        plot_accuracy("PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare della classe target e della perturbazione media (con epsilon, epsilon_step e max_iter fissati)
         epsilon = [0.05]
