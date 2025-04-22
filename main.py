@@ -90,7 +90,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN1) BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
 
         # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione massima (con epsilon e max_iter fissati)
-        epsilon = [0.03]
+        epsilon = [0.05]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [10]
         accuracies, max_perturbations, _ = bim(classifierNN1, classifierNN2, epsilon, epsilon_step_values, max_iter, test_images, test_labels)
@@ -102,7 +102,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
 
         # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
-        epsilon = [0.03]
+        epsilon = [0.05]
         epsilon_step = [0.005]
         max_iter_values = [1, 3, 5, 7, 10]
         accuracies, max_perturbations, _ = bim(classifierNN1, classifierNN2, epsilon, epsilon_step, max_iter_values, test_images, test_labels)
@@ -130,7 +130,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon_step e della perturbazione massima (con epsilon, max_iter e target_class fissati)
-        epsilon = [0.03]
+        epsilon = [0.05]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [10]
         accuracies, max_perturbations, targeted_accuracy = bim(classifierNN1, classifierNN2, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted, target_class)
@@ -144,7 +144,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di max_iter e della perturbazione massima (con epsilon, epsilon_step e target_class fissati)
-        epsilon = [0.03]
+        epsilon = [0.05]
         epsilon_step = [0.005]
         max_iter_values = [1, 3, 5, 7, 10]
         accuracies, max_perturbations, targeted_accuracy = bim(classifierNN1, classifierNN2, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted, target_class)
@@ -158,7 +158,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
 
         # Calcolo dell'accuracy e della targeted accuracy al variare della classe target e della perturbazione massima (con epsilon, epsilon_step e max_iter fissati)
-        epsilon = [0.03]
+        epsilon = [0.05]
         epsilon_step = [0.005]
         max_iter = [10]
         target_class_values = test_set.get_used_labels()
@@ -172,8 +172,8 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
     if not targeted:
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
-        epsilon_step = [0.01]
-        max_iter = [5]
+        epsilon_step = [0.05]
+        max_iter = [10]
         accuracies, max_perturbations, _ = pgd(classifierNN1, classifierNN2, epsilon_values, epsilon_step, max_iter, test_images, test_labels)
         epsilon_values.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
@@ -183,9 +183,9 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
 
         # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione massima (con epsilon e max_iter fissati)
-        epsilon = [0.025]
+        epsilon = [0.05]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
-        max_iter = [5]
+        max_iter = [10]
         accuracies, max_perturbations, _ = pgd(classifierNN1, classifierNN2, epsilon, epsilon_step_values, max_iter, test_images, test_labels)
         epsilon_step_values.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
@@ -195,8 +195,8 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
 
         # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
-        epsilon = [0.025]
-        epsilon_step = [0.01]
+        epsilon = [0.05]
+        epsilon_step = [0.005]
         max_iter_values = [1, 3, 5, 7, 10]
         accuracies, max_perturbations, _ = pgd(classifierNN1, classifierNN2, epsilon, epsilon_step, max_iter_values, test_images, test_labels)
         max_iter_values.insert(0, 0.0)
@@ -210,8 +210,8 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
     else:
         # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon e della perturbazione massima (con epsilon_step, max_iter e target_class fissati)
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
-        epsilon_step = [0.01]
-        max_iter = [5]
+        epsilon_step = [0.05]
+        max_iter = [10]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifierNN1, classifierNN2, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted, target_class)
         epsilon_values.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
@@ -225,7 +225,7 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
         # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon_step e della perturbazione massima (con epsilon, max_iter e target_class fissati)
         epsilon = [0.05]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
-        max_iter = [5]
+        max_iter = [10]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifierNN1, classifierNN2, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted, target_class)
         epsilon_step_values.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
@@ -238,7 +238,7 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di max_iter e della perturbazione massima (con epsilon, epsilon_step e target_class fissati)
         epsilon = [0.05]
-        epsilon_step = [0.01]
+        epsilon_step = [0.005]
         max_iter_values = [1, 3, 5, 7, 10]
         accuracies, max_perturbations, targeted_accuracy = pgd(classifierNN1, classifierNN2, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted, target_class)
         max_iter_values.insert(0, 0.0)
@@ -252,8 +252,8 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, ac
 
         # Calcolo dell'accuracy e della targeted accuracy al variare della classe target e della perturbazione massima (con epsilon, epsilon_step e max_iter fissati)
         epsilon = [0.05]
-        epsilon_step = [0.01]
-        max_iter = [5]
+        epsilon_step = [0.005]
+        max_iter = [10]
         target_class_values = test_set.get_used_labels()
         accuracies, max_perturbations, targeted_accuracy = pgd(classifierNN1, classifierNN2, epsilon, epsilon_step, max_iter, test_images, test_labels, targeted, target_class_values) 
         plot_accuracy("(NN1) PGD Targeted - Accuracy and Targeted Accuracy vs Target Class and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Target Class", target_class_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])

@@ -10,8 +10,8 @@ NUM_CLASSES = 8631
 
 def fgsm(classifierNN1, classifierNN2, epsilon_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = defaultdict(list)
+    max_perturbations = []    
     targeted_accuracies = defaultdict(list)
-    max_perturbations = []
 
     for epsilon in epsilon_values:
 
@@ -66,8 +66,8 @@ def fgsm(classifierNN1, classifierNN2, epsilon_values, test_images, test_labels,
 
 def bim(classifierNN1, classifierNN2, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = defaultdict(list)
+    max_perturbations = []    
     targeted_accuracies = defaultdict(list)
-    max_perturbations = []
 
     for epsilon in epsilon_values:
         for epsilon_step in epsilon_step_values:
@@ -123,8 +123,8 @@ def bim(classifierNN1, classifierNN2, epsilon_values, epsilon_step_values, max_i
 
 def pgd(classifierNN1, classifierNN2, epsilon_values, epsilon_step_values, max_iter_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = defaultdict(list)
+    max_perturbations = []    
     targeted_accuracies = defaultdict(list)
-    max_perturbations = []
 
     for epsilon in epsilon_values:
         for epsilon_step in epsilon_step_values:
@@ -208,8 +208,8 @@ def deepfool(classifierNN1, classifierNN2, epsilon_values, max_iter_values, test
 
 def carlini_wagner(classifierNN1, classifierNN2, confidence_values, max_iter_values, learning_rate_values, test_images, test_labels, targeted=False, target_class_values=None):
     accuracies = defaultdict(list)
+    max_perturbations = []    
     targeted_accuracies = defaultdict(list)
-    max_perturbations = []
 
     for confidence in confidence_values:
         for max_iter in max_iter_values:
