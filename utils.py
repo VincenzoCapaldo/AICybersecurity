@@ -56,11 +56,12 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, accuracy_cle
     fig.suptitle(title, fontsize=16)
 
     # Valori sui dati clean
-    x.insert(0, 0.0)
-    max_perturbations.insert(0, 0.0)
-    accuracies.insert(0, accuracy_clean)
-    if targeted:
-        targeted_accuracies.insert(0, targeted_accuracy_clean)
+    if not x_title == "Target Class":
+        x.insert(0, 0.0)
+        max_perturbations.insert(0, 0.0)
+        accuracies.insert(0, accuracy_clean)
+        if targeted:
+            targeted_accuracies.insert(0, targeted_accuracy_clean)
 
     # Accuracy and Targeted Accuracy vs x
     axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
