@@ -4,6 +4,7 @@ import torch
 from sklearn.metrics import accuracy_score
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from utils import compute_accuracy
+from utils import process_images
 
 NUM_CLASSES = 8631
 
@@ -33,11 +34,11 @@ def fgsm(classifierNN1, classifierNN2, epsilon_values, test_images, test_labels,
                 targeted_accuracies["nn1"].append(targeted_attack_accuracy)
 
                 # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label vere
-                accuracy = compute_accuracy(classifierNN2, test_images_adv, test_labels)
+                accuracy = compute_accuracy(classifierNN2, process_images(test_images_adv, use_padding=False), test_labels)
                 accuracies["nn2"].append(accuracy)
 
                 # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label della classe target
-                targeted_attack_accuracy = compute_accuracy(classifierNN2, test_images_adv, targeted_labels)
+                targeted_attack_accuracy = compute_accuracy(classifierNN2, process_images(test_images_adv, use_padding=False), targeted_labels)
                 targeted_accuracies["nn2"].append(targeted_attack_accuracy)
 
                 # Calcolo della perturbazione massima
@@ -53,7 +54,7 @@ def fgsm(classifierNN1, classifierNN2, epsilon_values, test_images, test_labels,
             accuracies["nn1"].append(accuracy)
 
             # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label vere
-            accuracy = compute_accuracy(classifierNN2, test_images_adv, test_labels)
+            accuracy = compute_accuracy(classifierNN2, process_images(test_images_adv, use_padding=False), test_labels)
             accuracies["nn2"].append(accuracy)
 
             # Calcolo della perturbazione massima
@@ -185,7 +186,7 @@ def deepfool(classifierNN1, classifierNN2, epsilon_values, max_iter_values, test
         for max_iter in max_iter_values:
 
             # Definizione dell'attacco
-            attack = DeepFool(classifierNN1=classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=64)
+            attack = DeepFool(classifier=classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=32)
 
             # Generazione delle immagini avversarie
             test_images_adv = attack.generate(test_images)
@@ -195,8 +196,8 @@ def deepfool(classifierNN1, classifierNN2, epsilon_values, max_iter_values, test
             accuracies["nn1"].append(accuracy)
 
             # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label vere
-            accuracy = compute_accuracy(classifierNN2, test_images_adv, test_labels)
-            accuracies["nn2"].append(accuracy)
+            #accuracy = compute_accuracy(classifierNN2, test_images_adv, test_labels)
+            #accuracies["nn2"].append(accuracy)
 
             # Calcolo della perturbazione massima
             max_perturbation = np.max(np.abs(test_images_adv - test_images))
@@ -215,7 +216,7 @@ def carlini_wagner(classifierNN1, classifierNN2, confidence_values, max_iter_val
             for learning_rate in learning_rate_values:
 
                 # Definizione dell'attacco
-                attack = CarliniLInfMethod(classifierNN1=classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, targeted=targeted)
+                attack = CarliniLInfMethod(classifier=classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, targeted=targeted)
 
                 if targeted:
                     for target_class in target_class_values:

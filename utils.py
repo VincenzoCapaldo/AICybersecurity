@@ -51,17 +51,9 @@ def show_image(image):
     plt.axis('off')  # per togliere gli assi
     plt.show()
 
-def plot_accuracy(title, x_title, x, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean=0.0, targeted=False, targeted_accuracies=None):
+def plot_accuracy(title, x_title, x, max_perturbations, accuracies, targeted=False, targeted_accuracies=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title, fontsize=16)
-
-    # Aggiunta dell'accuracy e della targeted accuracy sui dati clean
-    if not x_title == "Target Class":
-        x.insert(0, 0.0)
-        max_perturbations.insert(0, 0.0)
-        accuracies.insert(0, accuracy_clean)
-        if targeted:
-            targeted_accuracies.insert(0, targeted_accuracy_clean)
 
     # Accuracy and Targeted Accuracy vs x
     axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
