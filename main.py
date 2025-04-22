@@ -66,24 +66,24 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted, accuracy_c
     if not targeted:
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione media (con epsilon_step e epsilon_step fissati)
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
-        epsilon_step = [0.01]
+        epsilon_step = [0.005]
         max_iter = [5]
         accuracies, max_perturbations, _ = bim(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted)
-        plot_accuracy("BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
         # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione media (con epsilon e max_iter fissati)
-        epsilon = [0.025]
+        epsilon = [0.03]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
         accuracies, max_perturbations, _ = bim(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted)
-        plot_accuracy("BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
         # Calcolo dell'accuracy al variare di max_iter e della perturbazione media (con epsilon e epsilon_step fissati)
-        epsilon = [0.025]
-        epsilon_step = [0.01]
-        max_iter_values = [1, 2, 5, 10, 20]
+        epsilon = [0.03]
+        epsilon_step = [0.005]
+        max_iter_values = [1, 3, 5, 7, 10]
         accuracies, max_perturbations, _ = bim(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted)
-        plot_accuracy("BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
+        plot_accuracy(f"BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
     ### Targeted (error-specific) BIM attack
     else:
@@ -92,21 +92,21 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted, accuracy_c
         epsilon_step = [0.01]
         max_iter = [5]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted, target_class)
-        plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon_step e della perturbazione media (con epsilon, max_iter e target_class fissati)
         epsilon = [0.025]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
         max_iter = [5]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted, target_class)
-        plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare di max_iter e della perturbazione media (con epsilon, epsilon_step e target_class fissati)
         epsilon = [0.025]
         epsilon_step = [0.01]
         max_iter_values = [1, 2, 5, 10, 20]
         accuracies, max_perturbations, targeted_accuracy = bim(classifier, epsilon, epsilon_step, max_iter_values, test_images, test_labels, targeted, target_class)
-        plot_accuracy("BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
+        plot_accuracy(f"BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted, targeted_accuracy)
 
         # Calcolo dell'accuracy e della targeted accuracy al variare della classe target e della perturbazione media (con epsilon, epsilon_step e max_iter fissati)
         epsilon = [0.025]
@@ -247,8 +247,8 @@ def run_cw(classifier, test_images, test_labels, test_set, targeted, accuracy_cl
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on classifiers.")
-    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
-    parser.add_argument("--targeted", type=bool, default=True, help="Run a targeted attack")
+    parser.add_argument("--attack", type=str, default="bim", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
+    parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
     
     
