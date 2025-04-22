@@ -67,14 +67,14 @@ def run_bim(classifier, test_images, test_labels, test_set, targeted, accuracy_c
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione media (con epsilon_step e epsilon_step fissati)
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
         epsilon_step = [0.005]
-        max_iter = [5]
+        max_iter = [10]
         accuracies, max_perturbations, _ = bim(classifier, epsilon_values, epsilon_step, max_iter, test_images, test_labels, targeted)
         plot_accuracy(f"BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 
         # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione media (con epsilon e max_iter fissati)
         epsilon = [0.03]
         epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
-        max_iter = [5]
+        max_iter = [10]
         accuracies, max_perturbations, _ = bim(classifier, epsilon, epsilon_step_values, max_iter, test_images, test_labels, targeted)
         plot_accuracy(f"BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, accuracy_clean, targeted_accuracy_clean, targeted)
 

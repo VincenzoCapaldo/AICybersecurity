@@ -85,7 +85,7 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, accuracy_cle
     axes[1].grid()
     
     plt.tight_layout()
-    filename = f"{title.replace(".",",")}.png"
+    filename = title.replace(".",",")+ ".png"
     save_path = os.path.join("./plot", filename)
     plt.savefig(save_path)
     print(f"Plot {title}.png salvato.")
