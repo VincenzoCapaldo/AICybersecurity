@@ -54,7 +54,7 @@ def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, test_set, a
 
     ### Targeted (error-specific) FGSM Attack
     else:
-        # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon e della perturbazione massima (con la target_class fissato)
+        # Calcolo dell'accuracy e della targeted accuracy al variare di epsilon e della perturbazione massima (con target_class fissato)
         epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
         accuracies, max_perturbations, targeted_accuracy = fgsm(classifierNN1, classifierNN2, epsilon_values, test_images, test_labels, targeted, target_class)
         epsilon_values.insert(0, 0.0)
