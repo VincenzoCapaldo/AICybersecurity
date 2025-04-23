@@ -65,8 +65,8 @@ class FaceDataset(Dataset):
         return test_images, test_labels
 
 
-def get_test_set():
-    # Istanza del test_set
+def get_dataset():
+    # Istanza del dataset
     return FaceDataset()
 
 # Funzione per creare il dataset di test a partire da un file CSV
