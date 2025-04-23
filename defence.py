@@ -6,12 +6,48 @@ import torch
 from torch.optim import Adam
 from scipy.special import softmax
 from art.estimators.classification import PyTorchClassifier
-from dataset import get_test_set
+from dataset import get_dataset
 from utils import *
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 
 
 NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
+
+
+def train_test_split(images, labels, test_size=0.2, shuffle=True, random_seed=2025):
+    """
+    Divide immagini e etichette in train e test set.
+
+    Parametri:
+        images (np.ndarray): Array delle immagini.
+        labels (np.ndarray): Array delle etichette.
+        test_size (float): Percentuale del dataset da usare come test (es. 0.2 per 20%).
+        shuffle (bool): Se True, mescola i dati prima dello split.
+        random_seed (int, opzionale): Seed per riproducibilità.
+
+    Ritorna:
+        train_images, train_labels, test_images, test_labels
+    """
+    assert images.shape[0] == labels.shape[0], "Numero di immagini ed etichette non corrisponde."
+    
+    num_samples = images.shape[0]
+    indices = np.arange(num_samples)
+
+    if shuffle:
+        np.random.seed(random_seed)
+        np.random.shuffle(indices)
+
+    split_idx = int(num_samples * (1 - test_size))
+
+    train_idx = indices[:split_idx]
+    test_idx = indices[split_idx:]
+
+    train_images = images[train_idx]
+    train_labels = labels[train_idx]
+    test_images = images[test_idx]
+    test_labels = labels[test_idx]
+
+    return train_images, train_labels, test_images, test_labels
 
 
 def setup_classifier(device, classify=True):
@@ -173,12 +209,14 @@ def main():
     # Setup dei classificatori
     classifierNN1= setup_classifier(device)
 
-    # Caricamento del test_set
-    test_set = get_test_set()
-    test_images, test_labels = test_set.get_images()
+    # Carica le immagini e le etichette
+    images, labels = get_dataset().get_images()
+
+    # Divisione in train e test set 80% - 20%
+    train_images, train_labels, test_images, test_labels = train_test_split(images, labels, test_size=0.2)
 
     # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
-    accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
+    accuracy_nn1_clean = compute_accuracy(classifierNN1, train_images, train_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
 
     # Directory per i modelli
@@ -187,7 +225,7 @@ def main():
 
     # Train or load Detectors
     detectors = {}
-    nb_train = test_images.shape[0]
+    nb_train = train_images.shape[0]
     for attack_type in attack_types:
         model_path = os.path.join("./models", f"{attack_type}_detector.pth")
         detector_classifier = setup_detector_classifier(device)
@@ -199,8 +237,8 @@ def main():
             else:
                 classifier = setup_classifier(device, classify=True)
             # Train the detector
-            x_train_adv = generate_adversarial_examples(classifier, attack_type, test_images)
-            x_train_detector = np.concatenate((test_images, x_train_adv), axis=0)
+            x_train_adv = generate_adversarial_examples(classifier, attack_type, train_images)
+            x_train_detector = np.concatenate((train_images, x_train_adv), axis=0)
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
             
@@ -213,8 +251,9 @@ def main():
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             print(f"Detector caricato da: {model_path}")
 
-    # Valutare detectors + classifier sui dati clean
-    adv_labels = np.zeros(nb_train, dtype=bool)
+    # Valutare detectors + classifier sui dati clean del test set
+    nb_test = test_images.shape[0]
+    adv_labels = np.zeros(nb_test, dtype=bool) # Tutti i campioni sono puliti (classe 0)
     accuracy, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold)
     print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy:.4f}")
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
