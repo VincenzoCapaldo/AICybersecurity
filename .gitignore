@@ -1,3 +1,8 @@
 models/senet50_ft_weight.pkl
 dataset/vggface2_train/train/*
 __pycache__/*
+detector_models/bim_detector.pth
+.gitignore
+.gitignore
+detector_models/fgsm_detector.pth
+detector_models/pgd_detector.pth

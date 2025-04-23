@@ -86,7 +86,7 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
         for i, eps in enumerate(epsilon_values):
             start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
             x_subset = x_test[start:end]
-            attack = DeepFool(estimator=classifier, epsilon = eps, max_iter=5)
+            attack = DeepFool(classifier=classifier, epsilon = eps, max_iter=5, batch_size=16)
             adv_examples.append(attack.generate(x=x_subset))
 
     elif attack_type == "cw":
@@ -97,7 +97,8 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
                 classifier=classifier,
                 confidence=conf,
                 max_iter=5,
-                learning_rate=0.01
+                learning_rate=0.01,
+                batch_size=8
             )
             adv_examples.append(attack.generate(x=x_subset))
 
@@ -127,7 +128,7 @@ def main():
 
     # Directory per i modelli
     os.makedirs("./detector_models", exist_ok=True)
-    attack_types = {"fgsm", "bim", "pgd", "cw", "df"}
+    attack_types = {"cw", "df"}
 
     # Train Detectors
     detectors = {}
@@ -147,12 +148,13 @@ def main():
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
             
             # Salvataggio dello state_dict del modello
-            torch.save(detector_classifier.state_dict(), model_path)
+            torch.save(detector_classifier.model.state_dict(), model_path)
             print(f"Detector salvato in: {model_path}")
         else:
             print(f"Caricamento del detector per attack: {attack_type}")
-            detector_classifier.load_state_dict(torch.load(model_path, map_location=device))
+            detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
             detector_classifier.eval()
+            
 
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             print(f"Detector caricato da: {model_path}")
