@@ -52,9 +52,12 @@ def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cl
         epsilon_values.insert(0, 0.0)
         max_perturbations.insert(0, 0.0)
         accuracies["nn1"].insert(0, accuracy_clean_nn1)
-        accuracies["nn2"].insert(0, accuracy_clean_nn2)
         plot_accuracy("(NN1) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+        
+        if classifierNN2 is not None:
+            accuracies["nn2"].insert(0, accuracy_clean_nn2)
+            plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+
 
     ### Targeted (error-specific) FGSM Attack
     else:

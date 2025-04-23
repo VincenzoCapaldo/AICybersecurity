@@ -200,6 +200,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
+    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
+    parser.add_argument("--targeted", type=bool, default=True, help="Run a targeted attack")
     args = parser.parse_args()
 
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -259,9 +261,18 @@ def main():
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
     # Valutare detectors + classifier sui dati adversarial
-    """
-    Per ogni attacco rifare le curve di attacco creo campioni avversari al variare dei parametri. 
-    """
+    adv_labels = np.ones(nb_test, dtype=bool) # Tutti i campioni sono adversarial (classe 1)
+    if args.attack == "fgsm":
+        run_fgsm(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+    elif args.attack == "bim":
+        run_bim(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+    elif args.attack == "pgd":
+        run_pgd(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+    elif args.attack == "df":
+        classifierNN1, _ = setup_classifiers(device, classify=False)
+        run_df(classifierNN1, None, test_images, test_labels, accuracy_nn1_clean, accuracy_nn2_clean)
+    elif args.attack == "cw":
+        run_cw(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
 
 
 if __name__ == "__main__":
