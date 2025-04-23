@@ -94,7 +94,7 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
             start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
             x_subset = x_test[start:end]
             attack = CarliniLInfMethod(
-                estimator=classifier,
+                classifier=classifier,
                 confidence=conf,
                 max_iter=5,
                 learning_rate=0.01
@@ -106,6 +106,10 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_detectors', type=bool, default=True, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
+    args = parser.parse_args()
+
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -121,19 +125,37 @@ def main():
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
 
-    attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
+    # Directory per i modelli
+    os.makedirs("./detector_models", exist_ok=True)
+    attack_types = {"fgsm", "bim", "pgd", "cw", "df"}
 
     # Train Detectors
     detectors = {}
     nb_train = test_images.shape[0]
     for attack_type in attack_types:
-        print(f"Training detector for attack :{attack_type}")
+        model_path = os.path.join("./detector_models", f"{attack_type}_detector.pth")
         detector_classifier = setup_detector_classifier(device)
-        detectors[attack_type] = BinaryInputDetector(detector_classifier)
-        x_train_adv = generate_adversarial_examples(classifierNN1, attack_type, test_images)
-        x_train_detector = np.concatenate((test_images, x_train_adv), axis=0)
-        y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
-        detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
+        if args.train_detectors:
+            print(f"Training detector for attack: {attack_type}")
+            detectors[attack_type] = BinaryInputDetector(detector_classifier)
+            if attack_type == "df":
+                classifierNN1 = setup_classifier(device, classify=False)
+            # Train the detector
+            x_train_adv = generate_adversarial_examples(classifierNN1, attack_type, test_images)
+            x_train_detector = np.concatenate((test_images, x_train_adv), axis=0)
+            y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
+            detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
+            
+            # Salvataggio dello state_dict del modello
+            torch.save(detector_classifier.state_dict(), model_path)
+            print(f"Detector salvato in: {model_path}")
+        else:
+            print(f"Caricamento del detector per attack: {attack_type}")
+            detector_classifier.load_state_dict(torch.load(model_path, map_location=device))
+            detector_classifier.eval()
+
+            detectors[attack_type] = BinaryInputDetector(detector_classifier)
+            print(f"Detector caricato da: {model_path}")
 
 if __name__ == "__main__":
     main()
