@@ -3,7 +3,7 @@ from collections import defaultdict
 import numpy as np
 import torch
 from art.attacks.evasion import FastGradientMethod
-from utils import compute_accuracy
+from utils import compute_accuracy, process_images
 
 NUM_CLASSES = 8631
 
