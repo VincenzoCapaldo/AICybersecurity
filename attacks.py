@@ -3,16 +3,18 @@ from collections import defaultdict
 import numpy as np
 import torch
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
-from utils import compute_accuracy, process_images
+from utils import compute_accuracy, process_images, compute_accuracy_with_detectors
 
 NUM_CLASSES = 8631
 
 class AdversarialAttack(ABC):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2):
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2 , detectors):
         self.classifierNN1 = classifierNN1
         self.classifierNN2 = classifierNN2
         self.test_images = test_images
         self.test_labels = test_labels
+        self.detectors = detectors
+        self.threshold = 0.5  # Soglia per i detector (default)
 
     @abstractmethod
     def generate_attack(self, targeted=False, target_class=0):
@@ -30,29 +32,33 @@ class AdversarialAttack(ABC):
         max_perturbation = self.compute_max_perturbation(test_images_adv)
         max_perturbations.append(max_perturbation)
 
-        # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label vere
-        accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, self.test_labels))
-
-        # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label della classe target
-        if targeted:
-            targeted_attack_accuracy = compute_accuracy(self.classifierNN1, test_images_adv, targeted_labels)
-            targeted_accuracies["nn1"].append(targeted_attack_accuracy)
+        # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label vere
+        if self.detectors is not None:
+            adv_labels = np.ones(test_images_adv.shape[0], dtype=bool) # Tutti i campioni sono adversarial (classe 1)
+            accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, self.test_labels, adv_labels, self.detectors, threshold=self.threshold))
+            if targeted:
+                # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label della classe target
+                targeted_accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, targeted_labels, adv_labels, self.detectors, threshold=self.threshold))
+        else:
+            # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label vere
+            accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, self.test_labels))
+            if targeted:
+                # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label della classe target
+                targeted_accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, targeted_labels))
         
         # TRASFERIBILITA' DELL'ATTACCO SUL CLASSIFICATORE NN2
         if self.classifierNN2 is not None:
             # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label vere
-            accuracy = compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), self.test_labels)
-            accuracies["nn2"].append(accuracy)
+            accuracies["nn2"].append(compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), self.test_labels))
 
             if targeted:
                 # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label della classe target
-                targeted_attack_accuracy = compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), targeted_labels)
-                targeted_accuracies["nn2"].append(targeted_attack_accuracy)
+                targeted_accuracies["nn2"].append(compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), targeted_labels))
     
 
 class FGSM(AdversarialAttack):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None):
-        super().__init__(test_images, test_labels, classifierNN1, classifierNN2)
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None, detectors=None):
+        super().__init__(test_images, test_labels, classifierNN1, classifierNN2, detectors)
 
     def generate_attack(self, epsilon, targeted=False, targeted_labels=None):
         attack = FastGradientMethod(estimator=self.classifierNN1, eps=epsilon, targeted=targeted)
@@ -79,8 +85,8 @@ class FGSM(AdversarialAttack):
     
 
 class BIM(AdversarialAttack):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None):
-        super().__init__(test_images, test_labels, classifierNN1, classifierNN2)
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None, detectors=None):
+        super().__init__(test_images, test_labels, classifierNN1, classifierNN2, detectors)
 
     def generate_attack(self, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = BasicIterativeMethod(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
@@ -110,8 +116,8 @@ class BIM(AdversarialAttack):
     
 
 class PGD(AdversarialAttack):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None):
-        super().__init__(test_images, test_labels, classifierNN1, classifierNN2)
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None, detectors=None):
+        super().__init__(test_images, test_labels, classifierNN1, classifierNN2, detectors)
 
     def generate_attack(self, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, random_eps=True, targeted=targeted)
@@ -141,8 +147,8 @@ class PGD(AdversarialAttack):
     
 
 class DF(AdversarialAttack):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None):
-        super().__init__(test_images, test_labels, classifierNN1, classifierNN2)
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None, detectors=None):
+        super().__init__(test_images, test_labels, classifierNN1, classifierNN2, detectors)
 
     def generate_attack(self, epsilon, max_iter):
         attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=16)
@@ -162,8 +168,8 @@ class DF(AdversarialAttack):
         return accuracies, max_perturbations
     
 class CW(AdversarialAttack):
-    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None):
-        super().__init__(test_images, test_labels, classifierNN1, classifierNN2)
+    def __init__(self, test_images, test_labels, classifierNN1, classifierNN2=None, detectors=None):
+        super().__init__(test_images, test_labels, classifierNN1, classifierNN2, detectors)
 
     def generate_attack(self, confidence, max_iter, learning_rate, targeted=False, targeted_labels=None):
         attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, 

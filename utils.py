@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from sklearn.metrics import accuracy_score
 from torchvision import transforms
 import matplotlib.pyplot as plt
-
+from scipy.special import softmax
 
 def compute_accuracy(classifier, x_test, y_test):
     # Predizioni del modello (output con le probabilità per ogni classe)
@@ -19,6 +19,58 @@ def compute_accuracy(classifier, x_test, y_test):
     # Calcoliamo l'accuratezza
     accuracy = accuracy_score(y_pred_labels, y_test)
     return accuracy
+
+
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5):
+    """
+    Calcola l'accuracy penalizzando i falsi positivi dei detector.
+    - classifier: il classificatore (con metodo predict).
+    - x_clean, y_clean: dati NON adversariali.
+    - y_adv: etichette per i campioni avversari (True/False).
+    - detectors: dict di detector ART.
+    - threshold: soglia per considerare un campione come avversario.
+    Ritorna: (accuracy_effettiva, n_samples_utili, n_falsi_positivi)
+    """
+    # Maschera di campioni rifiutati da almeno un detector
+    rejected_mask = np.zeros(x_test.shape[0], dtype=bool)
+
+    for name, detector in detectors.items():
+        report, _ = detector.detect(x_test)
+        logits = np.array(report["predictions"])  # shape (n_samples, 2)
+        probs = softmax(logits, axis=1)
+        adversarial_probs = probs[:, 1]
+        is_adversarial = adversarial_probs > threshold # True se avversario; False se pulito
+        rejected_mask = np.logical_or(is_adversarial, rejected_mask)  # Un campione è scartato se almeno un detector lo scarta
+        detection_error = np.logical_xor(is_adversarial, y_adv)
+        print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
+        print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
+        print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
+
+    accepted_mask = np.logical_not(rejected_mask)  # Inverti la maschera: True se accettato, False se scartato
+    
+    # Campioni accettati = quelli che passeranno al classificatore
+    x_pass = x_test[accepted_mask]
+    y_pass = y_test[accepted_mask]
+
+    # Predizioni del classificatore
+    y_pred = classifier.predict(x_pass)
+    y_pred_labels = np.argmax(y_pred, axis=1)
+
+    n_total = y_test.shape[0]
+    n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
+    
+    is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
+
+    # Falsi positivi: campioni puliti scartati dai detector (0,1)
+    n_fp = np.sum(np.logical_and(is_adversarial, ~y_adv))
+    
+    # Campioni correttamente scartati (1,1)
+    n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
+    
+    # Accuracy: corrette / totale originario (quindi penalizza falsi positivi)
+    accuracy = (n_correct + n_correct_discarded) / n_total
+
+    return accuracy, n_fp
 
 
 def process_images(images, target_size=(256), use_padding=False):
@@ -51,33 +103,38 @@ def show_image(image):
     plt.axis('off')  # per togliere gli assi
     plt.show()
 
-def plot_accuracy(title, x_title, x, max_perturbations, accuracies, targeted=False, targeted_accuracies=None):
-    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-    fig.suptitle(title, fontsize=16)
 
-    # Accuracy and Targeted Accuracy vs x
-    axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
-    if targeted:
-        axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[0].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
-    else:
-        axes[0].legend(["Accuracy"], loc="upper right")
-    axes[0].set_xlabel(x_title)
-    axes[0].grid()
+def train_test_split(images, labels, test_size=0.2, shuffle=True, random_seed=2025):
+    """
+    Divide immagini e etichette in train e test set.
 
-    # Accuracy and Targeted Accuracy vs Max Perturbations
-    axes[1].plot(max_perturbations, accuracies, marker='o', linestyle='-', color='b')
-    if targeted:
-        axes[1].plot(max_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[1].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
-    else:
-        axes[1].legend(["Accuracy"], loc="upper right")
-    axes[1].set_xlabel("Max Perturbations")
-    axes[1].axvline(x=0.05, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
-    axes[1].grid()
+    Parametri:
+        images (np.ndarray): Array delle immagini.
+        labels (np.ndarray): Array delle etichette.
+        test_size (float): Percentuale del dataset da usare come test (es. 0.2 per 20%).
+        shuffle (bool): Se True, mescola i dati prima dello split.
+        random_seed (int, opzionale): Seed per riproducibilità.
+
+    Ritorna:
+        train_images, train_labels, test_images, test_labels
+    """
+    assert images.shape[0] == labels.shape[0], "Numero di immagini ed etichette non corrisponde."
     
-    plt.tight_layout()
-    filename = title.replace(".",",")+ ".png"
-    save_path = os.path.join("./plot", filename)
-    plt.savefig(save_path)
-    print(f"Plot {title}.png salvato.")
+    num_samples = images.shape[0]
+    indices = np.arange(num_samples)
+
+    if shuffle:
+        np.random.seed(random_seed)
+        np.random.shuffle(indices)
+
+    split_idx = int(num_samples * (1 - test_size))
+
+    train_idx = indices[:split_idx]
+    test_idx = indices[split_idx:]
+
+    train_images = images[train_idx]
+    train_labels = labels[train_idx]
+    test_images = images[test_idx]
+    test_labels = labels[test_idx]
+
+    return train_images, train_labels, test_images, test_labels

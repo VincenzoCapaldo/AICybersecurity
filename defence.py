@@ -1,53 +1,17 @@
 import argparse
 import numpy as np
+import os
 from nets import get_NN1, get_detector
 from art.defences.detector.evasion import BinaryInputDetector
 import torch
 from torch.optim import Adam
-from scipy.special import softmax
 from art.estimators.classification import PyTorchClassifier
 from dataset import get_dataset
 from utils import *
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
-
+from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
 
 NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
-
-
-def train_test_split(images, labels, test_size=0.2, shuffle=True, random_seed=2025):
-    """
-    Divide immagini e etichette in train e test set.
-
-    Parametri:
-        images (np.ndarray): Array delle immagini.
-        labels (np.ndarray): Array delle etichette.
-        test_size (float): Percentuale del dataset da usare come test (es. 0.2 per 20%).
-        shuffle (bool): Se True, mescola i dati prima dello split.
-        random_seed (int, opzionale): Seed per riproducibilità.
-
-    Ritorna:
-        train_images, train_labels, test_images, test_labels
-    """
-    assert images.shape[0] == labels.shape[0], "Numero di immagini ed etichette non corrisponde."
-    
-    num_samples = images.shape[0]
-    indices = np.arange(num_samples)
-
-    if shuffle:
-        np.random.seed(random_seed)
-        np.random.shuffle(indices)
-
-    split_idx = int(num_samples * (1 - test_size))
-
-    train_idx = indices[:split_idx]
-    test_idx = indices[split_idx:]
-
-    train_images = images[train_idx]
-    train_labels = labels[train_idx]
-    test_images = images[test_idx]
-    test_labels = labels[test_idx]
-
-    return train_images, train_labels, test_images, test_labels
 
 
 def setup_classifier(device, classify=True):
@@ -144,64 +108,12 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
     return x_test_adv
 
 
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5):
-    """
-    Calcola l'accuracy penalizzando i falsi positivi dei detector.
-    - classifier: il classificatore (con metodo predict).
-    - x_clean, y_clean: dati NON adversariali.
-    - y_adv: etichette per i campioni avversari (True/False).
-    - detectors: dict di detector ART.
-    - threshold: soglia per considerare un campione come avversario.
-    Ritorna: (accuracy_effettiva, n_samples_utili, n_falsi_positivi)
-    """
-    # Maschera di campioni rifiutati da almeno un detector
-    rejected_mask = np.zeros(x_test.shape[0], dtype=bool)
-
-    for name, detector in detectors.items():
-        report, _ = detector.detect(x_test)
-        logits = np.array(report["predictions"])  # shape (n_samples, 2)
-        probs = softmax(logits, axis=1)
-        adversarial_probs = probs[:, 1]
-        is_adversarial = adversarial_probs > threshold # True se avversario; False se pulito
-        rejected_mask = np.logical_or(is_adversarial, rejected_mask)  # Un campione è scartato se almeno un detector lo scarta
-        detection_error = np.logical_xor(is_adversarial, y_adv)
-        print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
-        print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
-        print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
-
-    accepted_mask = np.logical_not(rejected_mask)  # Inverti la maschera: True se accettato, False se scartato
-    
-    # Campioni accettati = quelli che passeranno al classificatore
-    x_pass = x_test[accepted_mask]
-    y_pass = y_test[accepted_mask]
-
-    # Predizioni del classificatore
-    y_pred = classifier.predict(x_pass)
-    y_pred_labels = np.argmax(y_pred, axis=1)
-
-    n_total = y_test.shape[0]
-    n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
-    
-    is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
-
-    # Falsi positivi: campioni puliti scartati dai detector (0,1)
-    n_fp = np.sum(np.logical_and(is_adversarial, ~y_adv))
-    
-    # Campioni correttamente scartati (1,1)
-    n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
-    
-    # Accuracy: corrette / totale originario (quindi penalizza falsi positivi)
-    accuracy = (n_correct + n_correct_discarded) / n_total
-
-    return accuracy, n_fp
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
-    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
-    parser.add_argument("--targeted", type=bool, default=True, help="Run a targeted attack")
+    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
+    parser.add_argument("--targeted", type=bool, default=False, help="Test on targeted attack")
     args = parser.parse_args()
 
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -212,7 +124,8 @@ def main():
     classifierNN1= setup_classifier(device)
 
     # Carica le immagini e le etichette
-    images, labels = get_dataset().get_images()
+    dataset = get_dataset()
+    images, labels = dataset.get_images()
 
     # Divisione in train e test set 80% - 20%
     train_images, train_labels, test_images, test_labels = train_test_split(images, labels, test_size=0.2)
@@ -256,23 +169,32 @@ def main():
     # Valutare detectors + classifier sui dati clean del test set
     nb_test = test_images.shape[0]
     adv_labels = np.zeros(nb_test, dtype=bool) # Tutti i campioni sono puliti (classe 0)
-    accuracy, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold)
-    print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy:.4f}")
+    accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold)
+    print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy_clean:.4f}")
+    print(f"Numero di immagini scartate dai detectors (FP): {fp}")
+
+    # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
+    target_class_label = "Cristiano_Ronaldo"
+    target_class = dataset.get_true_label(target_class_label)
+    targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
+    targeted_accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, targeted_labels, adv_labels, detectors, threshold=args.threshold)
+    print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy_clean:.4f}")
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
     # Valutare detectors + classifier sui dati adversarial
     adv_labels = np.ones(nb_test, dtype=bool) # Tutti i campioni sono adversarial (classe 1)
+    # Avvio dell'attacco selezionato
     if args.attack == "fgsm":
-        run_fgsm(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+        run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
     elif args.attack == "bim":
-        run_bim(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+        run_bim(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
     elif args.attack == "pgd":
-        run_pgd(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+        run_pgd(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
     elif args.attack == "df":
-        classifierNN1, _ = setup_classifiers(device, classify=False)
-        run_df(classifierNN1, None, test_images, test_labels, accuracy_nn1_clean, accuracy_nn2_clean)
+        classifierNN1 = setup_classifier(device, classify=False)
+        run_df(classifierNN1, None, test_images, test_labels, accuracy_clean, None, detectors)
     elif args.attack == "cw":
-        run_cw(classifierNN1, None, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
+        run_cw(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
 
 
 if __name__ == "__main__":
