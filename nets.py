@@ -212,6 +212,42 @@ def get_NN2(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
     return model
 
 
+class AdversarialDetector(nn.Module):
+    def __init__(self, backbone):
+        super().__init__()
+        self.backbone = backbone
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(2048, 512),
+            nn.ReLU(),
+            nn.Linear(512, 1)  # output: [clean, adversarial]
+        )
+
+    def forward(self, x):
+        with torch.no_grad():
+            feats = self.backbone(x)  # [B, 2048, 1, 1]
+        feats = feats.view(feats.size(0), -1)
+        return self.classifier(feats)
+
+
+
+
+def get_detector(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
+    if not os.path.exists('./models'):
+        os.makedirs('./models')
+
+    # Backbone SENet50 senza fully-connected finale
+    backbone = senet50(num_classes=8631, include_top=False)
+    load_state_dict(backbone, model_path)
+    backbone.to(device)
+    backbone.eval()
+
+    # Costruisci il detector
+    model = AdversarialDetector(backbone)
+    model.to(device)
+    print("Adversarial Detector costruito correttamente con backbone SENet50")
+    return model
+
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
     #nn1 = get_NN1(device)
