@@ -38,8 +38,8 @@ def setup_classifiers(device, classify=True):
     return classifierNN1, classifierNN2
 
         
-def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
-    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2)
+def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector):
+    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2, detector)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
     epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
@@ -47,19 +47,22 @@ def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cl
     epsilon_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy("(NN1) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy("(NN2) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy("(NN2) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy("(NN1) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
     
 
-def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
-    attack = BIM(test_images, test_labels, classifierNN1, classifierNN2)
+def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector):
+    attack = BIM(test_images, test_labels, classifierNN1, classifierNN2, detector)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
     epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
@@ -69,15 +72,18 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN1) BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
       
     # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione massima (con epsilon e max_iter fissati)
     epsilon = [0.05]
@@ -87,16 +93,18 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon_step_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
-
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
 
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     epsilon = [0.05]
@@ -106,19 +114,22 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
-        plot_accuracy(f"(NN1) BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
         plot_accuracy(f"(NN2) BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN1) BIM Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
     else:
         plot_accuracy(f"(NN1) BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
-    attack = PGD(test_images, test_labels, classifierNN1, classifierNN2)
+def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector):
+    attack = PGD(test_images, test_labels, classifierNN1, classifierNN2, detector)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
     epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
@@ -128,15 +139,18 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:        
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN1) PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
       
     # Calcolo dell'accuracy al variare di epsilon_step e della perturbazione massima (con epsilon e max_iter fissati)
     epsilon = [0.05]
@@ -146,16 +160,18 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon_step_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
-
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies["nn2"])
 
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     epsilon = [0.05]
@@ -165,19 +181,22 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) PGD Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2):
-    attack = DF(test_images, test_labels, classifierNN1, classifierNN2)
+def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, detector):
+    attack = DF(test_images, test_labels, classifierNN1, classifierNN2, detector)
     # Nota: nella libreria ART non è implementata la versione targeted di DeepFool.
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con max_iter fissato)
@@ -187,9 +206,10 @@ def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
     epsilon_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
     plot_accuracy(f"(NN1) DeepFool Non-targeted - Accuracy vs Epsilon and Max Perturbations (Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-    plot_accuracy(f"(NN2) DeepFool Non-targeted - Accuracy vs Epsilon and Max Perturbations (Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
+        plot_accuracy(f"(NN2) DeepFool Non-targeted - Accuracy vs Epsilon and Max Perturbations (Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
 
     # Calcolo dell'accuracy al variare del numero di iterazioni e della perturbazione massima (con epsilon fissato)
     epsilon = [0.05]
@@ -198,13 +218,14 @@ def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
     plot_accuracy(f"(NN1) DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"])
-    plot_accuracy(f"(NN2) DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
+        plot_accuracy(f"(NN2) DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
-    attack = CW(test_images, test_labels, classifierNN1, classifierNN2)
+def run_cw(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector):
+    attack = CW(test_images, test_labels, classifierNN1, classifierNN2, detector)
 
     # Calcolo dell'accuracy al variare della confidence e della perturbazione massima (con max_iter e learning_rate fissati)
     confidence_values = [0.1, 0.5, 1, 2, 5, 10]
@@ -214,15 +235,18 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, acc
     confidence_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) Carlini-Wagner Non-targeted - Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies["nn2"])
 
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con confidence e learning_rate fissati)
     confidence = [0.5]
@@ -232,15 +256,18 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, acc
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN1) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) Carlini-Wagner Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
     
     # Calcolo dell'accuracy al variare del learning_rate e della perturbazione massima (con confidence e max_iter fissati)
     confidence = [0.5]
@@ -250,15 +277,18 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, acc
     learning_rate_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    accuracies["nn2"].insert(0, accuracy_clean_nn2)      
+    if classifierNN2 is not None:
+        accuracies["nn2"].insert(0, accuracy_clean_nn2)  
     if targeted:
         targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy(f"(NN1) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy(f"(NN2) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
+        if classifierNN2 is not None:
+            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
+            plot_accuracy(f"(NN2) Carlini-Wagner Targeted - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
     else:
         plot_accuracy(f"(NN1) Carlini-Wagner Non-targeted - Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn1"])
-        plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn2"])
+        if classifierNN2 is not None:
+            plot_accuracy(f"(NN2) Carlini-Wagner Non-targeted - Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies["nn2"])
         
 
 def main():
@@ -302,16 +332,16 @@ def main():
 
     # Avvio dell'attacco selezionato
     if args.attack == "fgsm":
-        run_fgsm(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
+        run_fgsm(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector=None)
     elif args.attack == "bim":
-        run_bim(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
+        run_bim(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector=None)
     elif args.attack == "pgd":
-        run_pgd(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
+        run_pgd(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector=None)
     elif args.attack == "df":
         classifierNN1, _ = setup_classifiers(device, classify=False)
-        run_df(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean)
+        run_df(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, detector=None)
     elif args.attack == "cw":
-        run_cw(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
+        run_cw(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detector=None)
 
 
 if __name__ == "__main__":
