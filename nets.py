@@ -193,10 +193,10 @@ def load_state_dict(model, model_path):
             raise KeyError('unexpected key "{}" in state_dict'.format(name))
 
 
-def get_NN1(device="cpu"):
+def get_NN1(device="cpu", classify=True):
     NN1 = InceptionResnetV1(pretrained='vggface2').eval()
     NN1.to(device)
-    NN1.classify = True
+    NN1.classify = classify
     print("Modello NN1 caricato correttamente")
     return NN1
 

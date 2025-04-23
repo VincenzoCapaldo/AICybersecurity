@@ -9,9 +9,9 @@ from attacks import fgsm, bim, pgd, deepfool, carlini_wagner
 
 NUM_CLASSES = 8631
 
-def setup_classifiers(device):
+def setup_classifiers(device, classify=True):
     # Istanzio le reti
-    nn1 = get_NN1(device)
+    nn1 = get_NN1(device, classify)
     nn2 = get_NN2(device)
 
     # Definizione dei classificatori
@@ -383,7 +383,7 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, acc
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on classifiers.")
-    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
+    parser.add_argument("--attack", type=str, default="df", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to run")
     parser.add_argument("--targeted", type=bool, default=True, help="Run a targeted attack")
     args = parser.parse_args()
     
@@ -428,6 +428,7 @@ def main():
     elif args.attack == "pgd":
         run_pgd(classifierNN1, classifierNN2, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
     elif args.attack == "df":
+        classifierNN1, _ = setup_classifiers(device, classify=False)
         run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_nn1_clean, accuracy_nn2_clean)
     elif args.attack == "cw":
         run_cw(classifierNN1, classifierNN2, test_images, test_labels, test_set, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, [target_class])
