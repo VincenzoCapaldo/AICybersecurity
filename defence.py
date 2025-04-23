@@ -118,21 +118,23 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     - threshold: soglia per considerare un campione come avversario.
     Ritorna: (accuracy_effettiva, n_samples_utili, n_falsi_positivi)
     """
-    # Maschera di campioni accettati da tutti i detector
-    accepted_mask = np.ones(x_test.shape[0], dtype=bool)
+    # Maschera di campioni rifiutati da almeno un detector
+    rejected_mask = np.zeros(x_test.shape[0], dtype=bool)
 
     for name, detector in detectors.items():
         report, _ = detector.detect(x_test)
         logits = np.array(report["predictions"])  # shape (n_samples, 2)
         probs = softmax(logits, axis=1)
         adversarial_probs = probs[:, 1]
-        is_adversarial = adversarial_probs > threshold
-        accepted_mask &= ~is_adversarial
+        is_adversarial = adversarial_probs > threshold # True se avversario; False se pulito
+        rejected_mask = np.logical_or(is_adversarial, rejected_mask)  # Un campione è scartato se almeno un detector lo scarta
         detection_error = np.logical_xor(is_adversarial, y_adv)
         print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
         print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
         print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
 
+    accepted_mask = np.logical_not(rejected_mask)  # Inverti la maschera: True se accettato, False se scartato
+    
     # Campioni accettati = quelli che passeranno al classificatore
     x_pass = x_test[accepted_mask]
     y_pass = y_test[accepted_mask]
@@ -143,11 +145,14 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
 
     n_total = y_test.shape[0]
     n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
-    n_fp = n_total - len(x_pass)  # falsi positivi: campioni puliti scartati dai detector
+    
+    is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
+
+    # Falsi positivi: campioni puliti scartati dai detector (0,1)
+    n_fp = np.sum(np.logical_and(is_adversarial, ~y_adv))
     
     # Campioni correttamente scartati (1,1)
-    is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
-    n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv))
+    n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
     
     # Accuracy: corrette / totale originario (quindi penalizza falsi positivi)
     accuracy = (n_correct + n_correct_discarded) / n_total
@@ -158,6 +163,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
+    parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
     args = parser.parse_args()
 
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -169,14 +175,14 @@ def main():
 
     # Caricamento del test_set
     test_set = get_test_set()
-    _, test_images, test_labels = test_set.get_images()
+    test_images, test_labels = test_set.get_images()
 
     # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
 
     # Directory per i modelli
-    os.makedirs("./detector_models", exist_ok=True)
+    os.makedirs("./models", exist_ok=True)
     attack_types = {"fgsm", "bim", "pgd"}
 
     # Train or load Detectors
@@ -189,11 +195,11 @@ def main():
             print(f"Training detector for attack: {attack_type}")
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             if attack_type == "df":
-                classifierNN1 = setup_classifier(device, classify=False)
+                classifier = setup_classifier(device, classify=False)
             else:
-                classifierNN1 = setup_classifier(device, classify=True)
+                classifier = setup_classifier(device, classify=True)
             # Train the detector
-            x_train_adv = generate_adversarial_examples(classifierNN1, attack_type, test_images)
+            x_train_adv = generate_adversarial_examples(classifier, attack_type, test_images)
             x_train_detector = np.concatenate((test_images, x_train_adv), axis=0)
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
@@ -209,7 +215,7 @@ def main():
 
     # Valutare detectors + classifier sui dati clean
     adv_labels = np.zeros(nb_train, dtype=bool)
-    accuracy, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors)
+    accuracy, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold)
     print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy:.4f}")
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
@@ -217,5 +223,7 @@ def main():
     """
     Per ogni attacco rifare le curve di attacco creo campioni avversari al variare dei parametri. 
     """
+
+
 if __name__ == "__main__":
     main()

@@ -62,7 +62,7 @@ class FaceDataset(Dataset):
 
         test_images = np.concatenate(test_images, axis=0)
         test_labels = np.concatenate(test_labels, axis=0)
-        return dataloader, test_images, test_labels
+        return test_images, test_labels
 
 
 def get_test_set():

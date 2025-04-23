@@ -1,4 +1,5 @@
 import argparse
+from gg import FGSM
 from nets import get_NN1, get_NN2
 import torch
 from torch.optim import Adam
@@ -38,8 +39,11 @@ def setup_classifiers(device, classify=True):
     return classifierNN1, classifierNN2
 
         
-def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, test_set, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
-
+def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
+    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2)
+    epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
+    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon_values, targeted=targeted, target_class=target_class)
+    
     ### Non-targeted (error-generic) FGSM attack
     if not targeted:
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
@@ -65,14 +69,6 @@ def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, test_set, a
         targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
         plot_accuracy("(NN1) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
         plot_accuracy("(NN2) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
-
-        # Calcolo dell'accuracy e della targeted accuracy al variare della classe target (con epsilon fissato)
-        epsilon = [0.05]
-        target_class_values = test_set.get_used_labels()
-        accuracies, max_perturbations, targeted_accuracy = fgsm(classifierNN1, classifierNN2, epsilon, test_images, test_labels, targeted, target_class_values)
-        plot_accuracy("(NN1) FGSM Targeted - Accuracy and Targeted Accuracy vs Target Class and Max Perturbations (Epsilon={epsilon})", "Target Class", target_class_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        plot_accuracy("(NN2) FGSM Targeted - Accuracy and Targeted Accuracy vs Target Class and Max Perturbations (Epsilon={epsilon})", "Target Class", target_class_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
-
 
 def run_bim(classifierNN1, classifierNN2, test_images, test_labels, test_set, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class):
     ### Non-targeted (error-generic) BIM attack
@@ -400,7 +396,7 @@ def main():
 
     # Caricamento del test_set
     test_set = get_test_set()
-    _, test_images, test_labels = test_set.get_images()
+    test_images, test_labels = test_set.get_images()
 
     # Preprocessing delle immagini per il secondo classificatore
     test_images_nn2 = process_images(test_images, use_padding=False)

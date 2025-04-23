@@ -230,8 +230,6 @@ class AdversarialDetector(nn.Module):
         return self.classifier(feats)
 
 
-
-
 def get_detector(device="cpu"):
     backbone = InceptionResnetV1(pretrained='vggface2', classify=False).eval()
     backbone.to(device)
