@@ -3,7 +3,7 @@ from nets import get_NN1, get_NN2
 import torch
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
-from dataset import get_dataset
+from dataset import get_test_set
 from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
 from utils import *
 
@@ -55,9 +55,9 @@ def main():
     # Setup dei classificatori
     classifierNN1, classifierNN2 = setup_classifiers(device)
 
-    # Caricamento del dataset
-    dataset = get_dataset()
-    images, labels = dataset.get_images()
+    # Caricamento del test_set
+    test_set = get_test_set()
+    images, labels = test_set.get_images()
 
     # Preprocessing delle immagini per il secondo classificatore
     images_nn2 = process_images(images, use_padding=False)
@@ -70,7 +70,7 @@ def main():
 
     # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
     target_class_label = "Cristiano_Ronaldo"
-    target_class = dataset.get_true_label(target_class_label)
+    target_class = test_set.get_true_label(target_class_label)
     targeted_labels = target_class * torch.ones(labels.size, dtype=torch.long)
     targeted_accuracy_clean_nn1 = compute_accuracy(classifierNN1, images, targeted_labels)
     print(f"Targeted accuracy del classificatore NN1 su dati clean: {targeted_accuracy_clean_nn1}")

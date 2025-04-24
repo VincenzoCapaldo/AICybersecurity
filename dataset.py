@@ -109,55 +109,34 @@ def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destin
 class TrainSet(Dataset):
     def __init__(self, images_dir="./dataset/detectors_train_set"):
         self.images_dir = images_dir
-        self.samples = []
+        self.samples = [
+            os.path.join(self.images_dir, fname)
+            for fname in os.listdir(self.images_dir)
+            if fname.endswith('.jpg')
+        ]
 
-        # Carica le etichette vere (str -> int)
-        LABELS = np.load(label_map_path)
-        self.true_labels = {str(name).strip(): idx for idx, name in enumerate(LABELS)}
-
-        # Legge il CSV e costruisce i path delle immagini e le label
-        with open(csv_path, "r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            for row in reader:
-                person_dir, name = row[0], row[1].strip(' "')
-                full_dir = os.path.join(images_dir, person_dir)
-                if os.path.isdir(full_dir):
-                    for img_file in os.listdir(full_dir):
-                        img_path = os.path.join(full_dir, img_file)
-                        if os.path.isfile(img_path):
-                            label = self.true_labels.get(name)
-                            if label is not None:
-                                self.samples.append((img_path, label))
 
     def __len__(self):
         return len(self.samples)
 
     def __getitem__(self, idx):
-        img_path, label = self.samples[idx]
+        img_path = self.samples[idx]
         image = Image.open(img_path)
         #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
         image = transforms.Resize(200)(image)
         image = transforms.CenterCrop(160)(image)
         image = np.array(image, dtype=np.uint8)
-        return transforms.ToTensor()(image), label
-
-    def get_true_label(self, name):
-        return self.true_labels.get(name)
-
-    def get_used_labels(self):
-        return sorted({label for _, label in self.samples})
+        return transforms.ToTensor()(image)
     
     def get_images(self):
         dataloader = DataLoader(self, batch_size=32, shuffle=False)
-        test_images, test_labels = [], []
+        train_images = []
 
-        for images, labels in dataloader:
-            test_images.append(images.numpy())
-            test_labels.append(labels)
+        for images in dataloader:
+            train_images.append(images.numpy())
 
-        test_images = np.concatenate(test_images, axis=0)
-        test_labels = np.concatenate(test_labels, axis=0)
-        return test_images, test_labels
+        train_images = np.concatenate(train_images, axis=0)
+        return train_images
 
 
 def get_detectors_train_set():

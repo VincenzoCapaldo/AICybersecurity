@@ -6,7 +6,7 @@ from art.defences.detector.evasion import BinaryInputDetector
 import torch
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
-from dataset import get_dataset
+from dataset import get_test_set, get_train_set
 from utils import *
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
@@ -126,15 +126,16 @@ def main():
     # Setup dei classificatori
     classifierNN1= setup_classifier(device)
 
-    # Carica le immagini e le etichette
-    dataset = get_dataset()
-    images, labels = dataset.get_images()
+    # Carica le immagini e le etichette del training set
+    train_set = get_train_set()
+    train_images = train_set.get_images()
 
-    # Divisione in train e test set 80% - 20%
-    train_images, train_labels, test_images, test_labels = train_test_split(images, labels, test_size=0.2)
+    # Carica le immagini e le etichette del test set
+    test_set = get_test_set()
+    test_images, test_labels = test_set.get_images()
 
     # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
-    accuracy_nn1_clean = compute_accuracy(classifierNN1, train_images, train_labels)
+    accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
     print(f"Accuracy del classificatore NN1 su dati clean: {accuracy_nn1_clean}")
 
     # Directory per i modelli
@@ -180,7 +181,7 @@ def main():
 
     # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
     target_class_label = "Cristiano_Ronaldo"
-    target_class = dataset.get_true_label(target_class_label)
+    target_class = test_set.get_true_label(target_class_label)
     targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
     targeted_accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, targeted_labels, adv_labels, detectors, threshold=args.threshold, verbose=True)
     print(f"Accuracy del classificatore col filtraggio dei detectors: {targeted_accuracy_clean:.4f}")
