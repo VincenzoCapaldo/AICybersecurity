@@ -139,7 +139,7 @@ class TrainSet(Dataset):
         return train_images
 
 
-def get_detectors_train_set():
+def get_train_set():
     return TrainSet()
 
 

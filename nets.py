@@ -231,10 +231,10 @@ class AdversarialDetector(nn.Module):
 
 def get_detector(device="cpu"):
     # questo è per il fine tuning della rete
-    backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
+    #backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
 
     # per addestrare la rete da zero
-    #backbone = InceptionResnetV1(classify=False)
+    backbone = InceptionResnetV1(classify=False)
     
     # Sblocca tutta la backbone
     for param in backbone.parameters():

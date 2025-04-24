@@ -126,13 +126,16 @@ def main():
     # Setup dei classificatori
     classifierNN1= setup_classifier(device)
 
-    # Carica le immagini e le etichette del training set
-    train_set = get_train_set()
-    train_images = train_set.get_images()
-
     # Carica le immagini e le etichette del test set
     test_set = get_test_set()
     test_images, test_labels = test_set.get_images()
+
+    # Carica le immagini e le etichette del training set
+    if args.train_detectors:
+        train_set = get_train_set()
+        train_images = train_set.get_images()
+        # Divisione in train e test set 80% - 20%
+        #train_images, _, test_images, test_labels = train_test_split(test_images, test_labels, test_size=0.2)  # per fare prove veloci (800 img invece che 4k).
 
     # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
     accuracy_nn1_clean = compute_accuracy(classifierNN1, test_images, test_labels)
@@ -142,6 +145,7 @@ def main():
     os.makedirs("./models", exist_ok=True)
     #attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
     attack_types = {"fgsm", "bim", "pgd"}
+    #attack_types = {"bim"}
 
     # Train or load Detectors
     detectors = {}
@@ -160,7 +164,7 @@ def main():
             x_train_adv = generate_adversarial_examples(classifier, attack_type, train_images)
             x_train_detector = np.concatenate((train_images, x_train_adv), axis=0)
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
-            detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
+            detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16, verbose=True)
             detector_classifier.model.eval()
             # Salvataggio dello state_dict del modello
             torch.save(detector_classifier.model.state_dict(), model_path)
@@ -190,16 +194,16 @@ def main():
     # Valutare detectors + classifier sui dati adversarial
     # Avvio dell'attacco selezionato
     if args.attack == "fgsm":
-        run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+        run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors, args.threshold)
     elif args.attack == "bim":
-        run_bim(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+        run_bim(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors, args.threshold)
     elif args.attack == "pgd":
-        run_pgd(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+        run_pgd(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors, args.threshold)
     elif args.attack == "df":
         classifierNN1 = setup_classifier(device, classify=False)
-        run_df(classifierNN1, None, test_images, test_labels, accuracy_clean, None, detectors)
+        run_df(classifierNN1, None, test_images, test_labels, accuracy_clean, None, detectors, args.threshold)
     elif args.attack == "cw":
-        run_cw(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+        run_cw(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors, args.threshold)
 
 
 if __name__ == "__main__":
