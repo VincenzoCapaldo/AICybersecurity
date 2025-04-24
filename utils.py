@@ -123,36 +123,3 @@ def save_images(images, filename, save_dir):
             img_array = (img_array * 255).clip(0, 255).astype(np.uint8)
         img = Image.fromarray(img_array)
         img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), 'JPEG')
-    """
-    Divide immagini e etichette in train e test set.
-
-    Parametri:
-        images (np.ndarray): Array delle immagini.
-        labels (np.ndarray): Array delle etichette.
-        test_size (float): Percentuale del dataset da usare come test (es. 0.2 per 20%).
-        shuffle (bool): Se True, mescola i dati prima dello split.
-        random_seed (int, opzionale): Seed per riproducibilità.
-
-    Ritorna:
-        train_images, train_labels, test_images, test_labels
-    """
-    assert images.shape[0] == labels.shape[0], "Numero di immagini ed etichette non corrisponde."
-    
-    num_samples = images.shape[0]
-    indices = np.arange(num_samples)
-
-    if shuffle:
-        np.random.seed(random_seed)
-        np.random.shuffle(indices)
-
-    split_idx = int(num_samples * (1 - test_size))
-
-    train_idx = indices[:split_idx]
-    test_idx = indices[split_idx:]
-
-    train_images = images[train_idx]
-    train_labels = labels[train_idx]
-    test_images = images[test_idx]
-    test_labels = labels[test_idx]
-
-    return train_images, train_labels, test_images, test_labels
