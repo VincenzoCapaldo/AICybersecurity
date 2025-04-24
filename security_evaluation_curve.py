@@ -2,8 +2,8 @@ from utils import *
 from attacks import FGSM, BIM, PGD, DF, CW
 
 
-def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors):
-    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2, detectors)
+def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None, threshold=0.05):
+    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
     epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
@@ -29,8 +29,8 @@ def run_fgsm(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cl
             plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
     
 
-def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors):
-    attack = BIM(test_images, test_labels, classifierNN1, classifierNN2, detectors)
+def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None, threshold=0.05):
+    attack = BIM(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
     epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
@@ -100,8 +100,8 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
             plot_accuracy(f"(NN2) BIM Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors):
-    attack = PGD(test_images, test_labels, classifierNN1, classifierNN2, detectors)
+def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None, threshold=0.05):
+    attack = PGD(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
     epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
@@ -171,8 +171,8 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
             plot_accuracy(f"(NN2) PGD Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, detectors):
-    attack = DF(test_images, test_labels, classifierNN1, classifierNN2, detectors)
+def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, detectors=None, threshold=0.05):
+    attack = DF(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
     # Nota: nella libreria ART non è implementata la versione targeted di DeepFool.
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con max_iter fissato)
@@ -204,8 +204,8 @@ def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
         plot_accuracy(f"(NN2) DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies["nn2"])
 
 
-def run_cw(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors):
-    attack = CW(test_images, test_labels, classifierNN1, classifierNN2, detectors)
+def run_cw(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clean_nn1, accuracy_clean_nn2, targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None, threshold=0.05):
+    attack = CW(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
 
     # Calcolo dell'accuracy al variare della confidence e della perturbazione massima (con max_iter e learning_rate fissati)
     confidence_values = [0.1, 0.5, 1, 2, 5, 10]

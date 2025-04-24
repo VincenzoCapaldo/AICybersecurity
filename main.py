@@ -79,16 +79,16 @@ def main():
 
     # Avvio dell'attacco selezionato
     if args.attack == "fgsm":
-        run_fgsm(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None)
+        run_fgsm(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
     elif args.attack == "bim":
-        run_bim(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None)
+        run_bim(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
     elif args.attack == "pgd":
-        run_pgd(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None)
+        run_pgd(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
     elif args.attack == "df":
         classifierNN1, _ = setup_classifiers(device, classify=False)
-        run_df(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, detectors=None)
+        run_df(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean)
     elif args.attack == "cw":
-        run_cw(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class, detectors=None)
+        run_cw(classifierNN1, classifierNN2, images, labels, accuracy_nn1_clean, accuracy_nn2_clean, args.targeted, targeted_accuracy_clean_nn1, targeted_accuracy_clean_nn2, target_class)
 
 
 if __name__ == "__main__":
