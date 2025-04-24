@@ -135,7 +135,7 @@ def generate_adversarial_train_set(classifier, x_test):
 
 
 def get_train_set_attack(attack_type):
-    path = os.path.join("./dataset/detectors_train_set", attack_type)
+    path = os.path.join(".\\dataset\\detectors_train_set\\adversarial_examples", attack_type)
     image_list = []
 
     for filename in sorted(os.listdir(path)):
@@ -175,14 +175,15 @@ def main():
         attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
         generate_adversarial_train_set(classifierNN1, train_images, attack_types)
 
+
     # Train or load Detectors
     detectors = {}
-    nb_train = train_images.shape[0]
     #attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
     attack_types = ["fgsm"]
     # Fase di train dei detector
     if args.train_detectors:
-
+        train_set = get_train_set()
+        train_images = train_set.get_images()
         for attack_type in attack_types:
             model_path = os.path.join("./models", f"{attack_type}_detector.pth")
             detector_classifier = setup_detector_classifier(device)
@@ -192,6 +193,7 @@ def main():
             
             # Train the detector
             x_train_adv = get_train_set_attack(attack_type)
+            nb_train = x_train_adv.shape[0]
             x_train_detector = np.concatenate((train_images, x_train_adv), axis=0)
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16, verbose=True)
