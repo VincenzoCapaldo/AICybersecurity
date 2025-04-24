@@ -10,7 +10,6 @@ from dataset import get_test_set, get_train_set
 from utils import *
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
-from PIL import Image
 
 NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
 
@@ -54,31 +53,16 @@ def setup_detector_classifier(device):
     return classifier
 
 
-def save_images(images, filename, save_dir):
-    os.makedirs(save_dir, exist_ok=True)
-    filename = filename.replace(".", ",")
-    for i, img_array in enumerate(images):
-        img_array = np.transpose(img_array, (1, 2, 0)) 
-        # Se float, scala a 0-255 e converti in uint8
-        if img_array.dtype == np.float32 or img_array.max() <= 1.0:
-            img_array = (img_array * 255).clip(0, 255).astype(np.uint8)
-        img = Image.fromarray(img_array)
-        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), 'JPEG')
-
-
-def generate_adversarial_train_set(classifier, x_test):
-    epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
-    confidence_values = [0.1, 0.5, 1, 5, 10]  # Valori per cw
+def generate_adversarial_train_set(classifier, attack_types, epsilon_values, confidence_values, save_dir = "./dataset/detectors_train_set/adversarial_examples"):
+    # Training set di partenza, con immagini clean
+    train_set = get_train_set()
+    train_images = train_set.get_images()
+    
     targeted = False
+    n_samples = train_images.shape[0]
 
-    save_dir = "./dataset/detectors_train_set/adversarial_examples"
-
-    n_samples = x_test.shape[0]
-    adv_examples = []
-
-    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+    # Per ogni attacco, calcola il numero di campioni da generare e genera i campioni avversari, salvandoli in una directory
     for attack in attack_types:
-
         if attack in ["fgsm", "bim", "pgd", "df"]:
             split_size = n_samples // len(epsilon_values)
         elif attack == "cw":
@@ -87,7 +71,7 @@ def generate_adversarial_train_set(classifier, x_test):
         if attack == "fgsm":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = x_test[start:end]
+                x_subset = train_images[start:end]
                 attack = FastGradientMethod(estimator=classifier, eps=eps, targeted=targeted)
                 adv_examples = attack.generate(x=x_subset)
                 save_images(adv_examples, f"eps_{eps}", save_dir + "/fgsm")
@@ -95,7 +79,7 @@ def generate_adversarial_train_set(classifier, x_test):
         elif attack == "bim":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = x_test[start:end]
+                x_subset = train_images[start:end]
                 attack = BasicIterativeMethod(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
                 adv_examples = attack.generate(x=x_subset)
                 save_images(adv_examples, f"eps_{eps}", save_dir + "/bim")
@@ -103,7 +87,7 @@ def generate_adversarial_train_set(classifier, x_test):
         elif attack == "pgd":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = x_test[start:end]
+                x_subset = train_images[start:end]
                 attack = ProjectedGradientDescent(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
                 adv_examples = attack.generate(x=x_subset)
                 save_images(adv_examples, f"eps_{eps}", save_dir + "/pgd")
@@ -111,7 +95,7 @@ def generate_adversarial_train_set(classifier, x_test):
         elif attack == "df":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = x_test[start:end]
+                x_subset = train_images[start:end]
                 attack = DeepFool(classifier=classifier, epsilon = eps, max_iter=5, batch_size=16)
                 adv_examples = attack.generate(x=x_subset)
                 save_images(adv_examples, f"eps_{eps}", save_dir + "/df")
@@ -119,7 +103,7 @@ def generate_adversarial_train_set(classifier, x_test):
         elif attack == "cw":
             for i, conf in enumerate(confidence_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
-                x_subset = x_test[start:end]
+                x_subset = train_images[start:end]
                 attack = CarliniLInfMethod(
                     classifier=classifier,
                     confidence=conf,
@@ -130,23 +114,7 @@ def generate_adversarial_train_set(classifier, x_test):
                 adv_examples = attack.generate(x=x_subset)
                 save_images(adv_examples, f"confidence_{conf}", save_dir + "/cw")
 
-    x_test_adv = np.concatenate(adv_examples, axis=0)
-    return x_test_adv
-
-
-def get_train_set_attack(attack_type):
-    path = os.path.join(".\\dataset\\detectors_train_set\\adversarial_examples", attack_type)
-    image_list = []
-
-    for filename in sorted(os.listdir(path)):
-        if filename.lower().endswith((".png", ".jpg", ".jpeg")):
-            img_path = os.path.join(path, filename)
-            image = Image.open(img_path).convert("RGB")
-            image = np.array(image, dtype=np.uint8)         # (H, W, C), uint8
-            image = np.transpose(image, (2, 0, 1))           # → (C, H, W)
-            image_list.append(image)
-
-    return np.stack(image_list, axis=0)
+        print (f"Dataset generato per l'attacco:{attack}")
 
 
 def main():
@@ -170,20 +138,22 @@ def main():
 
     # Generazione del training set avversario
     if args.generate_train:
-        train_set = get_train_set()
-        train_images = train_set.get_images()
         attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-        generate_adversarial_train_set(classifierNN1, train_images, attack_types)
+        epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
+        confidence_values = [0.1, 0.5, 1, 5, 10]  # Valori per cw
+        generate_adversarial_train_set(classifierNN1, attack_types, epsilon_values, confidence_values)
 
 
     # Train or load Detectors
     detectors = {}
     #attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
     attack_types = ["fgsm"]
+
     # Fase di train dei detector
     if args.train_detectors:
-        train_set = get_train_set()
-        train_images = train_set.get_images()
+        # Training set di partenza, con immagini clean
+        train_images_clean = get_train_set().get_images()
+        nb_train = train_images_clean.shape[0]
         for attack_type in attack_types:
             model_path = os.path.join("./models", f"{attack_type}_detector.pth")
             detector_classifier = setup_detector_classifier(device)
@@ -191,13 +161,20 @@ def main():
             print(f"Training detector for attack: {attack_type}")
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             
-            # Train the detector
-            x_train_adv = get_train_set_attack(attack_type)
-            nb_train = x_train_adv.shape[0]
-            x_train_detector = np.concatenate((train_images, x_train_adv), axis=0)
+            # Trainining set avversario
+            training_set_path = os.path.join("./adversarial_examples", attack_type)
+            train_images_adv = get_train_set(save_dir=training_set_path).get_images()
+
+            # Concatenazione delle immagini clean e avversarie
+            x_train_detector = np.concatenate((train_images_clean, train_images_adv), axis=0)
+
+            # Creazione delle etichette per il training set
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
+
+            # Inizio addestramento del detector
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16, verbose=True)
             detector_classifier.model.eval()
+
             # Salvataggio dello state_dict del modello
             torch.save(detector_classifier.model.state_dict(), model_path)
             print(f"Detector salvato in: {model_path}")
@@ -237,7 +214,6 @@ def main():
         print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
         # Valutare detectors + classifier sui dati adversarial
-        # Avvio dell'attacco selezionato
         if args.attack == "fgsm":
             run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors, args.threshold)
         elif args.attack == "bim":

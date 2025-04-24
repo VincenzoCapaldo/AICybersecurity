@@ -10,67 +10,12 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 
-# Classe per la gestione del test set
-class TestSet(Dataset):
-    def __init__(self, images_dir="./dataset/test_set", csv_path="./dataset/test_set.csv", 
+def get_test_set(images_dir="./dataset/test_set", csv_path="./dataset/test_set.csv", 
                  label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"):
-        self.images_dir = images_dir
-        self.samples = []
-
-        # Carica le etichette vere (str -> int)
-        LABELS = np.load(label_map_path)
-        self.true_labels = {str(name).strip(): idx for idx, name in enumerate(LABELS)}
-
-        # Legge il CSV e costruisce i path delle immagini e le label
-        with open(csv_path, "r", encoding="utf-8") as f:
-            reader = csv.reader(f)
-            for row in reader:
-                person_dir, name = row[0], row[1].strip(' "')
-                full_dir = os.path.join(images_dir, person_dir)
-                if os.path.isdir(full_dir):
-                    for img_file in os.listdir(full_dir):
-                        img_path = os.path.join(full_dir, img_file)
-                        if os.path.isfile(img_path):
-                            label = self.true_labels.get(name)
-                            if label is not None:
-                                self.samples.append((img_path, label))
-
-    def __len__(self):
-        return len(self.samples)
-
-    def __getitem__(self, idx):
-        img_path, label = self.samples[idx]
-        image = Image.open(img_path)
-        #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
-        image = transforms.Resize(200)(image)
-        image = transforms.CenterCrop(160)(image)
-        image = np.array(image, dtype=np.uint8)
-        return transforms.ToTensor()(image), label
-
-    def get_true_label(self, name):
-        return self.true_labels.get(name)
-
-    def get_used_labels(self):
-        return sorted({label for _, label in self.samples})
-    
-    def get_images(self):
-        dataloader = DataLoader(self, batch_size=32, shuffle=False)
-        test_images, test_labels = [], []
-
-        for images, labels in dataloader:
-            test_images.append(images.numpy())
-            test_labels.append(labels)
-
-        test_images = np.concatenate(test_images, axis=0)
-        test_labels = np.concatenate(test_labels, axis=0)
-        return test_images, test_labels
-
-
-def get_test_set():
     # Istanza del dataset
-    return TestSet()
+    return TestSet(images_dir, csv_path, label_map_path)
 
-
+# Funzione per creare il dataset di test clean a partire da un file CSV
 def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img):
     # Lettura del file CSV contenente gli ID delle persone
     with open(csv_file, newline='', encoding='utf-8') as csvfile:
@@ -105,45 +50,11 @@ def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destin
             print(f"Copiate {len(selected_images)} immagini per {person_name}")
 
 
-# Classe per la gestione del test set
-class TrainSet(Dataset):
-    def __init__(self, images_dir="./dataset/detectors_train_set/clean"):
-        self.images_dir = images_dir
-        self.samples = [
-            os.path.join(self.images_dir, fname)
-            for fname in os.listdir(self.images_dir)
-            if fname.endswith('.jpg')
-        ]
+def get_train_set(images_dir="./dataset/detectors_train_set", save_dir="./clean"):
+    return TrainSet(images_dir, save_dir)
 
 
-    def __len__(self):
-        return len(self.samples)
-
-    def __getitem__(self, idx):
-        img_path = self.samples[idx]
-        image = Image.open(img_path)
-        #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
-        image = transforms.Resize(200)(image)
-        image = transforms.CenterCrop(160)(image)
-        image = np.array(image, dtype=np.uint8)
-        return transforms.ToTensor()(image)
-    
-    def get_images(self):
-        dataloader = DataLoader(self, batch_size=32, shuffle=False)
-        train_images = []
-
-        for images in dataloader:
-            train_images.append(images.numpy())
-
-        train_images = np.concatenate(train_images, axis=0)
-        return train_images
-
-
-def get_train_set():
-    return TrainSet()
-
-
-# Funzione per creare il dataset di test a partire da un file CSV
+# Funzione per creare il dataset di train clean a partire da un file CSV
 def create_detectors_training_set(dataset_directory_origin, dataset_directory_destination, number_img):
     # Crea la directory di destinazione se non esiste
     os.makedirs(dataset_directory_destination, exist_ok=True)
@@ -169,6 +80,104 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
         filename = f"img_{i:05d}.jpg"
         destination_path = os.path.join(dataset_directory_destination, filename)
         shutil.copy(image_path, destination_path)
+
+
+# Classe per la gestione del test set
+class TestSet(Dataset):
+    def __init__(self, images_dir, csv_path, label_map_path):
+        self.images_dir = images_dir
+        if not os.path.isdir(self.images_dir):
+            raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
+        self.samples = []
+
+        # Carica le etichette vere (str -> int)
+        LABELS = np.load(label_map_path)
+        self.true_labels = {str(name).strip(): idx for idx, name in enumerate(LABELS)}
+
+        # Legge il CSV e costruisce i path delle immagini e le label
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                person_dir, name = row[0], row[1].strip(' "')
+                full_dir = os.path.join(images_dir, person_dir)
+                if os.path.isdir(full_dir):
+                    for img_file in os.listdir(full_dir):
+                        img_path = os.path.join(full_dir, img_file)
+                        if os.path.isfile(img_path):
+                            label = self.true_labels.get(name)
+                            if label is not None:
+                                self.samples.append((img_path, label))
+        
+        if len(self.samples) == 0:
+            raise FileNotFoundError(f"Nessuna immagine trovata nella directory {self.images_dir}.")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path, label = self.samples[idx]
+        image = Image.open(img_path)
+        #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
+        image = transforms.Resize(200)(image)
+        image = transforms.CenterCrop(160)(image)
+        image = np.array(image, dtype=np.uint8)
+        return transforms.ToTensor()(image), label
+
+    def get_true_label(self, name):
+        return self.true_labels.get(name)
+
+    def get_used_labels(self):
+        return sorted({label for _, label in self.samples})
+    
+    def get_images(self):
+        dataloader = DataLoader(self, batch_size=32, shuffle=False)
+        test_images, test_labels = [], []
+
+        for images, labels in dataloader:
+            test_images.append(images.numpy())
+            test_labels.append(labels)
+
+        test_images = np.concatenate(test_images, axis=0)
+        test_labels = np.concatenate(test_labels, axis=0)
+        return test_images, test_labels
+
+
+# Classe per la gestione del test set
+class TrainSet(Dataset):
+    def __init__(self, images_dir, save_dir):
+        self.images_dir = os.path.join(images_dir, save_dir)
+        if not os.path.isdir(self.images_dir):
+            raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
+        
+        self.samples = [
+            os.path.join(self.images_dir, fname)
+            for fname in os.listdir(self.images_dir)
+            if fname.endswith('.jpg')
+        ]
+        if len(self.samples) == 0:
+            raise FileNotFoundError(f"Nessuna immagine .jpg trovata nella directory {self.images_dir}.")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path = self.samples[idx]
+        image = Image.open(img_path)
+        #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
+        image = transforms.Resize(200)(image)
+        image = transforms.CenterCrop(160)(image)
+        image = np.array(image, dtype=np.uint8)
+        return transforms.ToTensor()(image)
+    
+    def get_images(self):
+        dataloader = DataLoader(self, batch_size=32, shuffle=False)
+        train_images = []
+
+        for images in dataloader:
+            train_images.append(images.numpy())
+
+        train_images = np.concatenate(train_images, axis=0)
+        return train_images
     
 
 if __name__ == "__main__":

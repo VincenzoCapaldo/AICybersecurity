@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 from torchvision import transforms
 import matplotlib.pyplot as plt
 from scipy.special import softmax
+from PIL import Image
 
 def compute_accuracy(classifier, x_test, y_test):
     # Predizioni del modello (output con le probabilità per ogni classe)
@@ -112,7 +113,16 @@ def show_image(image):
     plt.show()
 
 
-def train_test_split(images, labels, test_size=0.2, shuffle=True, random_seed=2025):
+def save_images(images, filename, save_dir):
+    os.makedirs(save_dir, exist_ok=True)
+    filename = filename.replace(".", ",")
+    for i, img_array in enumerate(images):
+        img_array = np.transpose(img_array, (1, 2, 0)) 
+        # Se float, scala a 0-255 e converti in uint8
+        if img_array.dtype == np.float32 or img_array.max() <= 1.0:
+            img_array = (img_array * 255).clip(0, 255).astype(np.uint8)
+        img = Image.fromarray(img_array)
+        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), 'JPEG')
     """
     Divide immagini e etichette in train e test set.
 
