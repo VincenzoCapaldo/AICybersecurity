@@ -10,6 +10,7 @@ from dataset import get_test_set, get_train_set
 from utils import *
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
+from PIL import Image
 
 NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
 
@@ -53,59 +54,77 @@ def setup_detector_classifier(device):
     return classifier
 
 
-def generate_adversarial_examples(classifier, attack_type, x_test):
+def save_images(images, filename, save_dir):
+    os.makedirs(save_dir, exist_ok=True)
+    filename = filename.replace(".", ",")
+    for i, img_array in enumerate(images):
+        img = Image.fromarray(img_array)
+        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), 'JPEG')
+
+
+def generate_adversarial_train_set(classifier, x_test):
     epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
     confidence_values = [0.1, 0.5, 1, 5, 10]  # Valori per cw
     targeted = False
 
+    save_dir = "./dataset/detectors_train_set/adversarial_examples"
+
     n_samples = x_test.shape[0]
     adv_examples = []
 
-    if attack_type in ["fgsm", "bim", "pgd", "df"]:
-        split_size = n_samples // len(epsilon_values)
-    elif attack_type == "cw":
-        split_size = n_samples // len(confidence_values)
+    attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
+    for attack in attack_types:
 
-    if attack_type == "fgsm":
-        for i, eps in enumerate(epsilon_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-            x_subset = x_test[start:end]
-            attack = FastGradientMethod(estimator=classifier, eps=eps, targeted=targeted)
-            adv_examples.append(attack.generate(x=x_subset))
+        if attack in ["fgsm", "bim", "pgd", "df"]:
+            split_size = n_samples // len(epsilon_values)
+        elif attack == "cw":
+            split_size = n_samples // len(confidence_values)
 
-    elif attack_type == "bim":
-        for i, eps in enumerate(epsilon_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-            x_subset = x_test[start:end]
-            attack = BasicIterativeMethod(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
-            adv_examples.append(attack.generate(x=x_subset))
+        if attack == "fgsm":
+            for i, eps in enumerate(epsilon_values):
+                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+                x_subset = x_test[start:end]
+                attack = FastGradientMethod(estimator=classifier, eps=eps, targeted=targeted)
+                adv_examples.append(attack.generate(x=x_subset))
+                save_images(adv_examples[-1], f"fgsm_eps_{eps}", save_dir)
 
-    elif attack_type == "pgd":
-        for i, eps in enumerate(epsilon_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-            x_subset = x_test[start:end]
-            attack = ProjectedGradientDescent(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
-            adv_examples.append(attack.generate(x=x_subset))
+        elif attack == "bim":
+            for i, eps in enumerate(epsilon_values):
+                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+                x_subset = x_test[start:end]
+                attack = BasicIterativeMethod(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
+                adv_examples.append(attack.generate(x=x_subset))
+                save_images(adv_examples[-1], f"bim_eps_{eps}", save_dir)
 
-    elif attack_type == "df":
-        for i, eps in enumerate(epsilon_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-            x_subset = x_test[start:end]
-            attack = DeepFool(classifier=classifier, epsilon = eps, max_iter=5, batch_size=16)
-            adv_examples.append(attack.generate(x=x_subset))
+        elif attack == "pgd":
+            for i, eps in enumerate(epsilon_values):
+                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+                x_subset = x_test[start:end]
+                attack = ProjectedGradientDescent(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
+                adv_examples.append(attack.generate(x=x_subset))
+                save_images(adv_examples[-1], f"pgd_eps_{eps}", save_dir)
 
-    elif attack_type == "cw":
-        for i, conf in enumerate(confidence_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
-            x_subset = x_test[start:end]
-            attack = CarliniLInfMethod(
-                classifier=classifier,
-                confidence=conf,
-                max_iter=5,
-                learning_rate=0.01,
-                batch_size=8
-            )
-            adv_examples.append(attack.generate(x=x_subset))
+        elif attack == "df":
+            for i, eps in enumerate(epsilon_values):
+                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+                x_subset = x_test[start:end]
+                attack = DeepFool(classifier=classifier, epsilon = eps, max_iter=5, batch_size=16)
+                adv_examples.append(attack.generate(x=x_subset))
+                save_images(adv_examples[-1], f"df_eps_{eps}", save_dir)
+
+        elif attack == "cw":
+            for i, conf in enumerate(confidence_values):
+                start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
+                x_subset = x_test[start:end]
+                attack = CarliniLInfMethod(
+                    classifier=classifier,
+                    confidence=conf,
+                    max_iter=5,
+                    learning_rate=0.01,
+                    batch_size=8
+                )
+                adv_examples.append(attack.generate(x=x_subset))
+                save_images(adv_examples[-1], f"cw_confidence_{conf}", save_dir)
 
     x_test_adv = np.concatenate(adv_examples, axis=0)
     return x_test_adv

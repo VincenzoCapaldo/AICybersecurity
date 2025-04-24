@@ -107,7 +107,7 @@ def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destin
 
 # Classe per la gestione del test set
 class TrainSet(Dataset):
-    def __init__(self, images_dir="./dataset/detectors_train_set"):
+    def __init__(self, images_dir="./dataset/detectors_train_set/clean"):
         self.images_dir = images_dir
         self.samples = [
             os.path.join(self.images_dir, fname)
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     if (Train_set):
         number_img_train = 4000 # Numero di immagini totale del training set
         dataset_directory_origin = '.\\dataset\\vggface2_train\\train' # Directory di origine contenente le sottocartelle per ogni ID persona con le immagini
-        dataset_directory_destination = '.\\dataset\\detectors_train_set' # Directory in cui salvare le immagini selezionate
+        dataset_directory_destination = '.\\dataset\\detectors_train_set\\clean' # Directory in cui salvare le immagini selezionate
         create_detectors_training_set(dataset_directory_origin, dataset_directory_destination, number_img_train)
     else:
         csv_file = '.\\dataset\\test_set.csv' # Percorso al file CSV contenente gli ID delle persone da inserire nel dataset finale (es. 'n000016'). Ogni riga deve contenere almeno un ID
