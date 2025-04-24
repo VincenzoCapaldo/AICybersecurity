@@ -21,11 +21,11 @@ def compute_accuracy(classifier, x_test, y_test):
     return accuracy
 
 
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, verbose=False):
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=False):
     """
     Calcola l'accuracy penalizzando i falsi positivi dei detector.
     - classifier: il classificatore (con metodo predict).
-    - x_clean, y_clean: dati NON adversariali.
+    - x_test, y_test: dati NON adversariali.
     - y_adv: etichette per i campioni avversari (True/False).
     - detectors: dict di detector ART.
     - threshold: soglia per considerare un campione come avversario.
@@ -54,11 +54,14 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     y_pass = y_test[accepted_mask]
 
     # Predizioni del classificatore
-    y_pred = classifier.predict(x_pass)
-    y_pred_labels = np.argmax(y_pred, axis=1)
-
-    n_total = y_test.shape[0]
-    n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
+    if x_pass.shape[0] > 0:
+        y_pred = classifier.predict(x_pass)
+        y_pred_labels = np.argmax(y_pred, axis=1)
+        n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
+    else:
+        n_correct = 0
+        if verbose:
+            print("Nessun campione accettato dai detector.")
     
     is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
 
@@ -69,7 +72,11 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
     
     # Accuracy: corrette / totale originario (quindi penalizza falsi positivi)
-    accuracy = (n_correct + n_correct_discarded) / n_total
+    n_total = y_test.shape[0]
+    if targeted:
+        accuracy = n_correct/n_total # I campioni scartati non vengono considerati perchè l'attacco non è andato a buon fine
+    else:    
+        accuracy = (n_correct + n_correct_discarded) / n_total
 
     return accuracy, n_fp
 

@@ -35,10 +35,10 @@ class AdversarialAttack(ABC):
         # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label vere
         if self.detectors is not None:
             adv_labels = np.ones(test_images_adv.shape[0], dtype=bool) # Tutti i campioni sono adversarial (classe 1)
-            accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, self.test_labels, adv_labels, self.detectors, threshold=self.threshold)[0])
+            accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, self.test_labels, adv_labels, self.detectors, self.threshold)[0])
             if targeted:
                 # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label della classe target
-                targeted_accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, targeted_labels, adv_labels, self.detectors, threshold=self.threshold)[0])
+                targeted_accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, targeted_labels, adv_labels, self.detectors, self.threshold, targeted)[0])
         else:
             # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label vere
             accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, self.test_labels))
