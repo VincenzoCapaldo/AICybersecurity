@@ -110,8 +110,8 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_detectors', type=bool, default=True, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
-    parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
+    parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
+    parser.add_argument('--threshold', type=float, default=0.7, help='Threshold per le rilevazioni dei detector')
     parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Test on targeted attack")
     args = parser.parse_args()
@@ -136,7 +136,7 @@ def main():
 
     # Directory per i modelli
     os.makedirs("./models", exist_ok=True)
-    attack_types = {"fgsm", "bim", "pgd"}
+    attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
 
     # Train or load Detectors
     detectors = {}
@@ -169,7 +169,7 @@ def main():
     # Valutare detectors + classifier sui dati clean del test set
     nb_test = test_images.shape[0]
     adv_labels = np.zeros(nb_test, dtype=bool) # Tutti i campioni sono puliti (classe 0)
-    accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold)
+    accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, test_labels, adv_labels, detectors, threshold=args.threshold, verbose=True)
     print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy_clean:.4f}")
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
@@ -177,24 +177,23 @@ def main():
     target_class_label = "Cristiano_Ronaldo"
     target_class = dataset.get_true_label(target_class_label)
     targeted_labels = target_class * torch.ones(test_labels.size, dtype=torch.long)
-    targeted_accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, targeted_labels, adv_labels, detectors, threshold=args.threshold)
-    print(f"Accuracy del classificatore col filtraggio dei detectors: {accuracy_clean:.4f}")
+    targeted_accuracy_clean, fp = compute_accuracy_with_detectors(classifierNN1, test_images, targeted_labels, adv_labels, detectors, threshold=args.threshold, verbose=True)
+    print(f"Accuracy del classificatore col filtraggio dei detectors: {targeted_accuracy_clean:.4f}")
     print(f"Numero di immagini scartate dai detectors (FP): {fp}")
 
     # Valutare detectors + classifier sui dati adversarial
-    #adv_labels = np.ones(nb_test, dtype=bool) # Tutti i campioni sono adversarial (classe 1)
-    ## Avvio dell'attacco selezionato
-    #if args.attack == "fgsm":
-    #    run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
-    #elif args.attack == "bim":
-    #    run_bim(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
-    #elif args.attack == "pgd":
-    #    run_pgd(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
-    #elif args.attack == "df":
-    #    classifierNN1 = setup_classifier(device, classify=False)
-    #    run_df(classifierNN1, None, test_images, test_labels, accuracy_clean, None, detectors)
-    #elif args.attack == "cw":
-    #    run_cw(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class_label, detectors)
+    # Avvio dell'attacco selezionato
+    if args.attack == "fgsm":
+        run_fgsm(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+    elif args.attack == "bim":
+        run_bim(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+    elif args.attack == "pgd":
+        run_pgd(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
+    elif args.attack == "df":
+        classifierNN1 = setup_classifier(device, classify=False)
+        run_df(classifierNN1, None, test_images, test_labels, accuracy_clean, None, detectors)
+    elif args.attack == "cw":
+        run_cw(classifierNN1, None, test_images, test_labels, accuracy_clean, None, args.targeted, targeted_accuracy_clean, None, target_class, detectors)
 
 
 if __name__ == "__main__":

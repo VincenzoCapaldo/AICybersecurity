@@ -21,7 +21,7 @@ def compute_accuracy(classifier, x_test, y_test):
     return accuracy
 
 
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5):
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, verbose=False):
     """
     Calcola l'accuracy penalizzando i falsi positivi dei detector.
     - classifier: il classificatore (con metodo predict).
@@ -42,9 +42,10 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
         is_adversarial = adversarial_probs > threshold # True se avversario; False se pulito
         rejected_mask = np.logical_or(is_adversarial, rejected_mask)  # Un campione è scartato se almeno un detector lo scarta
         detection_error = np.logical_xor(is_adversarial, y_adv)
-        print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
-        print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
-        print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
+        if verbose:
+            print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
+            print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
+            print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
 
     accepted_mask = np.logical_not(rejected_mask)  # Inverti la maschera: True se accettato, False se scartato
     
