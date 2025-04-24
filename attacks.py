@@ -14,7 +14,7 @@ class AdversarialAttack(ABC):
         self.test_images = test_images
         self.test_labels = test_labels
         self.detectors = detectors
-        self.threshold = 0.7  # Soglia per i detector (default)
+        self.threshold = 0.5  # Soglia per i detector (default)
 
     @abstractmethod
     def generate_attack(self, targeted=False, target_class=0):

@@ -40,7 +40,10 @@ def setup_detector_classifier(device):
     classifier = PyTorchClassifier(
         model=detector,
         loss=torch.nn.CrossEntropyLoss(),
-        optimizer=Adam(detector.parameters(), lr=0.001),
+        optimizer = torch.optim.Adam(
+    filter(lambda p: p.requires_grad, detector.parameters()), 
+    lr=1e-3
+),
         input_shape=(3, 160, 160),
         channels_first=True,
         nb_classes=2,
@@ -111,8 +114,8 @@ def generate_adversarial_examples(classifier, attack_type, x_test):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati')
-    parser.add_argument('--threshold', type=float, default=0.7, help='Threshold per le rilevazioni dei detector')
-    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
+    parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
+    parser.add_argument("--attack", type=str, default="bim", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Test on targeted attack")
     args = parser.parse_args()
 
@@ -136,7 +139,8 @@ def main():
 
     # Directory per i modelli
     os.makedirs("./models", exist_ok=True)
-    attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
+    #attack_types = {"fgsm", "bim", "pgd", "df", "cw"}
+    attack_types = {"fgsm", "bim", "pgd"}
 
     # Train or load Detectors
     detectors = {}
@@ -156,13 +160,14 @@ def main():
             x_train_detector = np.concatenate((train_images, x_train_adv), axis=0)
             y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16)
-            
+            detector_classifier.model.eval()
             # Salvataggio dello state_dict del modello
             torch.save(detector_classifier.model.state_dict(), model_path)
             print(f"Detector salvato in: {model_path}")
         else:
             print(f"Caricamento del detector per attack: {attack_type}")
             detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
+            detector_classifier.model.eval()
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             print(f"Detector caricato da: {model_path}")
 

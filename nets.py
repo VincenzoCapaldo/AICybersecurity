@@ -224,18 +224,33 @@ class AdversarialDetector(nn.Module):
         )
 
     def forward(self, x):
-        with torch.no_grad():
-            feats = self.backbone(x)  # [B, 512, 1, 1]
+        feats = self.backbone(x)  # [B, 512, 1, 1]
         feats = feats.view(feats.size(0), -1)
         return self.classifier(feats)
 
 
 def get_detector(device="cpu"):
-    backbone = InceptionResnetV1(pretrained='vggface2', classify=False).eval()
+    # questo è per il fine tuning della rete
+    backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
+
+    # per addestrare la rete da zero
+    #backbone = InceptionResnetV1(classify=False)
+    
+    # Sblocca tutta la backbone
+    for param in backbone.parameters():
+        param.requires_grad = True
+    
+    # fine tuning solo sull'ultimo layer della backbone (lo usiamo solo per la relazione)
+    '''
+    # Sblocca solo gli ultimi blocchi (esempio: block8)
+    for name, param in backbone.named_parameters():
+        if "block8" in name:
+            param.requires_grad = True
+    '''
     backbone.to(device)
     detector = AdversarialDetector(backbone)
     detector.to(device)
-    print("Adversarial Detector con InceptionResnetV1 caricato correttamente")
+    print("Adversarial Detector con parte della backbone sbloccata")
     return detector
 
 if __name__ == "__main__":

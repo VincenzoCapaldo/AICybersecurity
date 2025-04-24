@@ -33,7 +33,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     attack = BIM(test_images, test_labels, classifierNN1, classifierNN2, detectors)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
-    epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     epsilon_step = [0.005]
     max_iter = [10]
     accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon_values, epsilon_step, max_iter, targeted, target_class)
@@ -82,7 +82,7 @@ def run_bim(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon = [0.05]
     epsilon_step = [0.005]
     max_iter_values = [1, 3, 5, 7, 10]
-    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon, epsilon_step_values, max_iter, targeted, target_class)
+    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon, epsilon_step, max_iter_values, targeted, target_class)
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
@@ -104,7 +104,7 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     attack = PGD(test_images, test_labels, classifierNN1, classifierNN2, detectors)
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e epsilon_step fissati)
-    epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     epsilon_step = [0.005]
     max_iter = [10]
     accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon_values, epsilon_step, max_iter, targeted, target_class)
@@ -153,7 +153,7 @@ def run_pgd(classifierNN1, classifierNN2, test_images, test_labels, accuracy_cle
     epsilon = [0.05]
     epsilon_step = [0.005]
     max_iter_values = [1, 3, 5, 7, 10]
-    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon, epsilon_step_values, max_iter, targeted, target_class)
+    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon, epsilon_step, max_iter_values, targeted, target_class)
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
@@ -176,7 +176,7 @@ def run_df(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
     # Nota: nella libreria ART non è implementata la versione targeted di DeepFool.
     
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con max_iter fissato)
-    epsilon_values = [0.00, 0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     max_iter = [5]
     accuracies, max_perturbations = attack.compute_security_curve(epsilon_values, max_iter)
     epsilon_values.insert(0, 0.0)
@@ -236,7 +236,7 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
     confidence = [0.5]
     max_iter_values = [1, 3, 5, 7, 10]
     learning_rate = [0.01]
-    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(confidence_values, max_iter, learning_rate, targeted, target_class)
+    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(confidence, max_iter_values, learning_rate, targeted, target_class)
     max_iter_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
@@ -257,7 +257,7 @@ def run_cw(classifierNN1, classifierNN2, test_images, test_labels, accuracy_clea
     confidence = [0.5]
     max_iter = [5]
     learning_rate_values = [0.001, 0.005, 0.01, 0.05, 0.1]
-    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(confidence_values, max_iter, learning_rate, targeted, target_class)
+    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(confidence, max_iter, learning_rate_values, targeted, target_class)
     learning_rate_values.insert(0, 0.0)
     max_perturbations.insert(0, 0.0)
     accuracies["nn1"].insert(0, accuracy_clean_nn1)
