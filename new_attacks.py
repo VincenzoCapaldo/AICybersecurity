@@ -24,39 +24,7 @@ class AdversarialAttack(ABC):
     @abstractmethod
     def generate_train_adv(self, images, values, save_dir, verbose=False):
         pass
-
-    def compute_max_perturbation(self, test_images_adv):
-        return np.max(np.abs(test_images_adv - self.test_images))
     
-    def compute_accuracies(self, accuracies, max_perturbations, targeted_accuracies, test_images_adv, targeted=False, targeted_labels=None):
-        # Calcolo della perturbazione massima
-        max_perturbation = self.compute_max_perturbation(test_images_adv)
-        max_perturbations.append(max_perturbation)
-
-        # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label vere
-        if self.detectors is not None:
-            adv_labels = np.ones(test_images_adv.shape[0], dtype=bool) # Tutti i campioni sono adversarial (classe 1)
-            accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, self.test_labels, adv_labels, self.detectors, self.threshold)[0])
-            if targeted:
-                # Calcolo dell'accuracy (sul classificatore NN1 + detectors) sulle immagini modificate rispetto alle label della classe target
-                targeted_accuracies["nn1"].append(compute_accuracy_with_detectors(self.classifierNN1, test_images_adv, targeted_labels, adv_labels, self.detectors, self.threshold, targeted)[0])
-        else:
-            # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label vere
-            accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, self.test_labels))
-            if targeted:
-                # Calcolo dell'accuracy (sul classificatore NN1) sulle immagini modificate rispetto alle label della classe target
-                targeted_accuracies["nn1"].append(compute_accuracy(self.classifierNN1, test_images_adv, targeted_labels))
-        
-        # TRASFERIBILITA' DELL'ATTACCO SUL CLASSIFICATORE NN2
-        if self.classifierNN2 is not None:
-            # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label vere
-            accuracies["nn2"].append(compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), self.test_labels))
-
-            if targeted:
-                # Calcolo dell'accuracy (sul classificatore NN2) sulle immagini modificate rispetto alle label della classe target
-                targeted_accuracies["nn2"].append(compute_accuracy(self.classifierNN2, process_images(test_images_adv, use_padding=False), targeted_labels))
-    
-
 class FGSM(AdversarialAttack):
     def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
         super().__init__(classifierNN1, classifierNN2, detectors, threshold)

@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from scipy.special import softmax
 from PIL import Image
 
+def compute_max_perturbation(test_images, test_images_adv):
+    return np.max(np.abs(test_images_adv - test_images))
 
 def compute_accuracy(classifier, x_test, y_test):
     # Predizioni del modello (output con le probabilità per ogni classe)
@@ -133,14 +135,15 @@ def save_images_as_npy(images, filename, save_dir):
 
 
 def load_images_from_npy_folder(folder_path):
-    # Trova il primo file .npy nella cartella
+    # Trova tutti i file .npy nella cartella
     files = [f for f in os.listdir(folder_path) if f.endswith('.npy')]
     if not files:
         raise FileNotFoundError("Nessun file .npy trovato nella cartella.")
-    
-    file_path = os.path.join(folder_path, files[0])
-    
-    # Carica il file .npy che contiene tutte le immagini
-    images_array = np.load(file_path)
-    
-    return images_array
+
+    images_list = []
+    for file_name in sorted(files):  # sorted per coerenza
+        file_path = os.path.join(folder_path, file_name)
+        images_array = np.load(file_path)
+        images_list.append(images_array)
+
+    return images_list

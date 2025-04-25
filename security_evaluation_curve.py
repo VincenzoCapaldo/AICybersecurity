@@ -1,33 +1,40 @@
 from utils import *
-from attacks import FGSM, BIM, PGD, DF, CW
 
+def run_fgsm(classifier, name, targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors=None, threshold=0.05):
+    images_dir = "./dataset/test_set/adversarial_examples/fgsm/"
+    target_dir = "targeted" if targeted else "untargeted"
+    load_dir = images_dir + target_dir
+    imgs_adv = load_images_from_npy_folder(load_dir)
 
-def run_fgsm(classifier, name, targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors=None, threshold=0.05):
-    attack = FGSM(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)
+    clean_images, clean_labels = test_set.get_images()
+
+    epsilon_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
     
-    # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
-    epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
-    accuracies, max_perturbations, targeted_accuracy = attack.compute_security_curve(epsilon_values, targeted, target_class)
-    epsilon_values.insert(0, 0.0)
-    max_perturbations.insert(0, 0.0)
-    accuracies["nn1"].insert(0, accuracy_clean_nn1)
-    if classifierNN2 is not None:
-        accuracies["nn2"].insert(0, accuracy_clean_nn2)
-    if detectors is not None:
-        label = "(NN1 + Detector)"
-    else:
-        label = "(NN1)"
+    max_perturbations = [0.0]
+    accuracies = [accuracy_clean]
     if targeted:
-        targeted_accuracy["nn1"].insert(0, targeted_accuracy_clean_nn1)
-        plot_accuracy(f"{label} FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"], targeted, targeted_accuracy["nn1"])
-        if classifierNN2 is not None:
-            targeted_accuracy["nn2"].insert(0, targeted_accuracy_clean_nn2)
-            plot_accuracy("(NN2) FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"], targeted, targeted_accuracy["nn2"])
-    else:
-        plot_accuracy(f"{label} FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn1"])
-        if classifierNN2 is not None:
-            plot_accuracy("(NN2) FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies["nn2"])
+        targeted_accuracies = [targeted_accuracy_clean]
+
+    # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
+    for img_adv in imgs_adv:
+        max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        print(compute_max_perturbation(clean_images, img_adv))
+        if detectors is None:
+            accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
+            if targeted:
+                targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+                targeted_accuracies.append(compute_accuracy(classifier, img_adv, targeted_labels))
+        else:
+            adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
+            accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
+            if targeted:
+                targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+                targeted_accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, targeted_labels, adv_labels, detectors, threshold, targeted=True)[0])
     
+    if targeted:
+        plot_accuracy(f"{name} FGSM Targeted - Accuracy and Targeted Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies, targeted, targeted_accuracies)
+    else:
+        plot_accuracy(f"{name} FGSM Non-targeted - Accuracy vs Epsilon and Max Perturbations", "Epsilon", epsilon_values, max_perturbations, accuracies)
 
 def run_bim(classifier, name, targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors=None, threshold=0.05):
     attack = BIM(test_images, test_labels, classifierNN1, classifierNN2, detectors, threshold)

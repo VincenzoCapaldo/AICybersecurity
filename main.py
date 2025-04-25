@@ -12,6 +12,7 @@ NUM_CLASSES = 8631
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
     parser.add_argument("--test_classifierNN1", type=bool, default=True, help="If true test on classifierNN1, otherwise test on classifierNN2")
+    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
     
@@ -52,15 +53,15 @@ def main():
 
     # Avvio dell'attacco selezionato
     if args.attack == "fgsm":
-        run_fgsm(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class)
+        run_fgsm(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
     elif args.attack == "bim":
-        run_bim(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class)
+        run_bim(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
     elif args.attack == "pgd":
-        run_pgd(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class)
+        run_pgd(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
     elif args.attack == "df":
-        run_df(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class)
+        run_df(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
     elif args.attack == "cw":
-        run_cw(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class)
+        run_cw(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
 
 
 if __name__ == "__main__":
