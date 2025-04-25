@@ -187,7 +187,7 @@ if __name__ == "__main__":
     random.seed(2025) # Imposta il seed per la riproducibilità
     Train_set = True # True se si vuole creare il training set, False se si vuole creare il test set
     if (Train_set):
-        number_img_train = 4000 # Numero di immagini totale del training set
+        number_img_train = 1000 # Numero di immagini totale del training set
         dataset_directory_origin = '.\\dataset\\vggface2_train\\train' # Directory di origine contenente le sottocartelle per ogni ID persona con le immagini
         dataset_directory_destination = '.\\dataset\\detectors_train_set\\clean' # Directory in cui salvare le immagini selezionate
         create_detectors_training_set(dataset_directory_origin, dataset_directory_destination, number_img_train)
