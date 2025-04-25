@@ -99,15 +99,15 @@ def main():
         # Valutare detectors + classifier sui dati adversarial
         name = "NN1 + detectors"
         if args.attack == "fgsm":
-            run_fgsm(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_fgsm(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
         elif args.attack == "bim":
-            run_bim(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_bim(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
         elif args.attack == "pgd":
-            run_pgd(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_pgd(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
         elif args.attack == "df":
-            run_df(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_df(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
         elif args.attack == "cw":
-            run_cw(classifier, name, args.targeted, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_cw(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
 
 if __name__ == "__main__":
     main()
