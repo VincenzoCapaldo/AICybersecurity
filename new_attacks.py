@@ -72,7 +72,7 @@ class FGSM(AdversarialAttack):
     def generate_test_adv(self, images, epsilon_values, save_dir, targeted=False, target_class=0, verbose=False):
         targeted_labels = None
         if targeted:
-            targeted_labels = target_class * torch.ones(self.test_labels.size, dtype=torch.long)
+            targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
 
         for epsilon in epsilon_values:
             # Generazione delle immagini avversarie
@@ -111,7 +111,7 @@ class BIM(AdversarialAttack):
     def generate_test_adv(self, images, epsilon_values, epsilon_step_values, max_iter_values, save_dir, targeted=False, target_class=0, verbose=False):
         targeted_labels = None
         if targeted:
-            targeted_labels = target_class * torch.ones(self.test_labels.size, dtype=torch.long)
+            targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
 
         for epsilon in epsilon_values:
             for epsilon_step in epsilon_step_values:
@@ -153,7 +153,7 @@ class PGD(AdversarialAttack):
         targeted_labels = None
         
         if targeted:
-            targeted_labels = target_class * torch.ones(self.test_labels.size, dtype=torch.long)
+            targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
         else:
             targeted_labels = None
 
@@ -230,7 +230,7 @@ class CW(AdversarialAttack):
         targeted_labels = None
         
         if targeted:
-            targeted_labels = target_class * torch.ones(self.test_labels.size, dtype=torch.long)
+            targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
         else:
             targeted_labels = None
 
