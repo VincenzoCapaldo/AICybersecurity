@@ -120,7 +120,7 @@ def generate_adversarial_train_set(classifier, attack_types, epsilon_values, con
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--generate_train', type=bool, default=True, help='Se True, genera il train adv set; altrimenti no')
-    parser.add_argument('--train_detectors', type=bool, default=True, help='Se True, addestra i detector; altrimenti carica i modelli salvati e procede con la valutazione')
+    parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati e procede con la valutazione')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
     parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Test on targeted attack")
@@ -138,8 +138,8 @@ def main():
 
     # Generazione del training set avversario
     if args.generate_train:
-        #attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-        attack_types = ["df", "cw"]
+        attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+        #attack_types = ["df", "cw"]
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
         confidence_values = [0.1, 0.5, 1, 5, 10]  # Valori per cw
         generate_adversarial_train_set(classifierNN1, attack_types, epsilon_values, confidence_values)
