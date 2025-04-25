@@ -10,7 +10,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 
-def get_test_set(images_dir="./dataset/test_set", csv_path="./dataset/test_set.csv", 
+def get_test_set(images_dir="./dataset/test_set/clean", csv_path="./dataset/test_set.csv", 
                  label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"):
     # Istanza del dataset
     return TestSet(images_dir, csv_path, label_map_path)
@@ -50,8 +50,8 @@ def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destin
             print(f"Copiate {len(selected_images)} immagini per {person_name}")
 
 
-def get_train_set(images_dir="./dataset/detectors_train_set", save_dir="./clean"):
-    return TrainSet(images_dir, save_dir)
+def get_train_set(images_dir="./dataset/detectors_train_set/clean"):
+    return TrainSet(images_dir)
 
 
 # Funzione per creare il dataset di train clean a partire da un file CSV
@@ -86,6 +86,8 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
 class TestSet(Dataset):
     def __init__(self, images_dir, csv_path, label_map_path):
         self.images_dir = images_dir
+        self.n_max_images_person = 1 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
         self.samples = []
@@ -101,12 +103,16 @@ class TestSet(Dataset):
                 person_dir, name = row[0], row[1].strip(' "')
                 full_dir = os.path.join(images_dir, person_dir)
                 if os.path.isdir(full_dir):
-                    for img_file in os.listdir(full_dir):
+
+                    # Se la directory esiste, cerca le immagini della persona selezionata
+                    for i, img_file in enumerate(os.listdir(full_dir)):
                         img_path = os.path.join(full_dir, img_file)
                         if os.path.isfile(img_path):
-                            label = self.true_labels.get(name)
-                            if label is not None:
-                                self.samples.append((img_path, label))
+                            if i < self.n_max_images_person: # Limita il numero di immagini per persona
+                                #print(len(self.samples))
+                                label = self.true_labels.get(name)
+                                if label is not None:
+                                    self.samples.append((img_path, label))
         
         if len(self.samples) == 0:
             raise FileNotFoundError(f"Nessuna immagine trovata nella directory {self.images_dir}.")
@@ -145,16 +151,20 @@ class TestSet(Dataset):
 
 # Classe per la gestione del test set
 class TrainSet(Dataset):
-    def __init__(self, images_dir, save_dir):
-        self.images_dir = os.path.join(images_dir, save_dir)
+    def __init__(self, images_dir):
+        self.images_dir = images_dir
+        self.n_max_images = 20 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.samples = []
+
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
         
-        self.samples = [
-            os.path.join(self.images_dir, fname)
-            for fname in os.listdir(self.images_dir)
-            if fname.endswith('.jpg')
-        ]
+        for i, fname in enumerate(os.listdir(self.images_dir)):
+            if fname.endswith('.jpg') and i < self.n_max_images:
+                self.samples.append(os.path.join(self.images_dir, fname))
+            if i >= self.n_max_images:
+                break
+
         if len(self.samples) == 0:
             raise FileNotFoundError(f"Nessuna immagine .jpg trovata nella directory {self.images_dir}.")
 
@@ -165,7 +175,7 @@ class TrainSet(Dataset):
         img_path = self.samples[idx]
         image = Image.open(img_path)
         if image.size != (160, 160):
-            #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
+            #image = transforms.Resize((160,160))(image) # Si puo utilizzare anche questo, ma calano le prestazioni di entrambi
             image = transforms.Resize(200)(image)
             image = transforms.CenterCrop(160)(image)
         image = np.array(image, dtype=np.uint8)
@@ -194,6 +204,6 @@ if __name__ == "__main__":
     else:
         csv_file = '.\\dataset\\test_set.csv' # Percorso al file CSV contenente gli ID delle persone da inserire nel dataset finale (es. 'n000016'). Ogni riga deve contenere almeno un ID
         dataset_directory_origin = '.\\dataset\\vggface2_train\\train' # Directory di origine contenente le sottocartelle per ogni ID persona con le immagini
-        dataset_directory_destination = '.\\dataset\\test_set' # Directory in cui salvare le immagini selezionate
+        dataset_directory_destination = '.\\dataset\\test_set\\clean' # Directory in cui salvare le immagini selezionate
         number_img_test = 10 # Numero massimo di immagini da copiare per ciascun ID (10 per 100 persone = 1000 img)
         create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img_test)

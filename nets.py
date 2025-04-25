@@ -5,6 +5,10 @@ import torch.nn as nn
 import math
 import torch.nn.functional as F
 from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
+from torch.optim import Adam
+from art.estimators.classification import PyTorchClassifier
+
+NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -252,6 +256,62 @@ def get_detector(device="cpu"):
     detector.to(device)
     print("Adversarial Detector con parte della backbone sbloccata")
     return detector
+
+
+def setup_classifierNN1(device, classify=True):
+    # Istanzio la rete
+    nn1 = get_NN1(device, classify)
+
+    # Definizione dei classificatori
+    classifierNN1 = PyTorchClassifier(
+        model=nn1,
+        loss=torch.nn.CrossEntropyLoss(),
+        optimizer=Adam(nn1.parameters(), lr=0.001),
+        input_shape=(3, 160, 160),
+        channels_first=True,
+        nb_classes=NUM_CLASSES,
+        clip_values=(0.0, 1.0),
+        device_type="gpu" if torch.cuda.is_available() else "cpu"
+    )
+    return classifierNN1
+
+
+def setup_classifierNN2(device):
+    # Istanzio la rete
+    nn2 = get_NN2(device)
+    classifierNN2 = PyTorchClassifier(
+        model=nn2,
+        loss=torch.nn.CrossEntropyLoss(),
+        optimizer=Adam(nn2.parameters(), lr=0.001),
+        input_shape=(3, 224, 224),
+        channels_first=True,
+        nb_classes=NUM_CLASSES,
+        clip_values=(0.0, 255.0),
+        device_type="gpu" if torch.cuda.is_available() else "cpu"
+    )
+    return classifierNN2
+
+
+def setup_detector_classifier(device):
+    # Istanzio la rete
+    detector = get_detector(device)
+
+    # Definizione dei classificatori
+    classifier = PyTorchClassifier(
+        model=detector,
+        loss=torch.nn.CrossEntropyLoss(),
+        optimizer = torch.optim.Adam(
+        filter(lambda p: p.requires_grad, detector.parameters()), 
+        lr=1e-3
+        ),
+        input_shape=(3, 160, 160),
+        channels_first=True,
+        nb_classes=2,
+        clip_values=(-0.5, 0.5),
+        device_type="gpu" if torch.cuda.is_available() else "cpu"
+    )
+    return classifier
+
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
