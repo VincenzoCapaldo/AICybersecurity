@@ -17,7 +17,6 @@ def run_fgsm(classifier, name, targeted, test_set, accuracy_clean, targeted_accu
     epsilon_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -52,7 +51,6 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -81,7 +79,6 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -110,7 +107,6 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter_values = [1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -145,7 +141,6 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -174,7 +169,6 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -203,7 +197,6 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter_values = [1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -230,17 +223,16 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-    max_iter = [5]
+    epsilon_values = [0.0, 0.01, 0.1, 1]
+    max_iter = [2]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
         else:
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
-        plot_accuracy(f"{name} DeepFool Non-targeted - Accuracy vs Epsilon and Max Perturbations (Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies)
+    plot_accuracy(f"{name} DeepFool Non-targeted - Accuracy vs Epsilon and Max Perturbations (Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies)
 
     # Calcolo dell'accuracy al variare del numero di iterazioni e della perturbazione massima (con epsilon fissato)
     load_dir = images_dir + "/plot2"
@@ -248,20 +240,19 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
     epsilon = [0.05]
-    max_iter_values = [1, 3, 5, 7, 10]
+    max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
-        print(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
         else:
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
-        plot_accuracy(f"{name} DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies)
+    plot_accuracy(f"{name} DeepFool Non-targeted - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon})", "Max Iterations", max_iter_values, max_perturbations, accuracies)
 
 
 def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors=None, threshold=0.05):
-    images_dir = "./dataset/test_set/adversarial_examples/fgsm/"
+    images_dir = "./dataset/test_set/adversarial_examples/cw/"
     target_dir = "targeted" if targeted else "untargeted"
     clean_images, clean_labels = test_set.get_images()
     

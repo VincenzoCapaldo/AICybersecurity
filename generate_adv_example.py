@@ -3,7 +3,7 @@ from nets import setup_classifierNN1
 import torch
 from dataset import get_test_set, get_train_set
 from utils import *
-from new_attacks import FGSM, BIM, PGD, DF, CW
+from attacks import FGSM, BIM, PGD, DF, CW
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["df", "cw"]
+    attack_types = ["df"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
@@ -133,12 +133,12 @@ def main():
             elif attack_name == "df":
                 save_dir = images_dir + f"{attack_name}"
                 # Inizializza il classificatore
-                classifier = setup_classifierNN1(device=device, classify=False)
+                classifier = setup_classifierNN1(device=device)
                 attack = DF(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-                max_iter_values = [5]
+                epsilon_values = [0.01, 0.1, 1]
+                max_iter_values = [2]
                 attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot1", verbose=args.verbose)
 
                 ## PLOT 2 - max_iter variabile ## 

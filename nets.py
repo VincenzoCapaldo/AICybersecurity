@@ -315,7 +315,7 @@ def setup_detector_classifier(device):
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    #nn1 = get_NN1(device)
+    nn1 = get_NN1(device, classify=True)
     #nn2 = get_NN2(device)
-    detector = get_detector(device)
-    print(detector)
+    #detector = get_detector(device)
+    #print(nn1)
