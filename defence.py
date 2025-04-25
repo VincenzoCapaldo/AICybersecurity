@@ -105,7 +105,7 @@ def main():
         elif args.attack == "pgd":
             run_pgd(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
         elif args.attack == "df":
-            run_df(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
+            run_df(classifier, name, test_set, accuracy_clean, detectors, args.threshold)
         elif args.attack == "cw":
             run_cw(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class, detectors, args.threshold)
 
