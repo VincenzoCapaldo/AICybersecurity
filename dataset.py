@@ -86,6 +86,7 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
 class TestSet(Dataset):
     def __init__(self, images_dir, csv_path, label_map_path):
         self.images_dir = images_dir
+        self.n_max_person = 20 # Numero massimo di immagini del dataset (per fare prove più veloci)
         self.n_max_images_person = 1 # Numero massimo di immagini del dataset (per fare prove più veloci)
         
         if not os.path.isdir(self.images_dir):
@@ -99,20 +100,21 @@ class TestSet(Dataset):
         # Legge il CSV e costruisce i path delle immagini e le label
         with open(csv_path, "r", encoding="utf-8") as f:
             reader = csv.reader(f)
-            for row in reader:
-                person_dir, name = row[0], row[1].strip(' "')
-                full_dir = os.path.join(images_dir, person_dir)
-                if os.path.isdir(full_dir):
+            for i, row in enumerate(reader):
+                if i < self.n_max_person: # Limita il numero di persone
+                    person_dir, name = row[0], row[1].strip(' "')
+                    full_dir = os.path.join(images_dir, person_dir)
+                    if os.path.isdir(full_dir):
 
-                    # Se la directory esiste, cerca le immagini della persona selezionata
-                    for i, img_file in enumerate(os.listdir(full_dir)):
-                        img_path = os.path.join(full_dir, img_file)
-                        if os.path.isfile(img_path):
-                            if i < self.n_max_images_person: # Limita il numero di immagini per persona
-                                #print(len(self.samples))
-                                label = self.true_labels.get(name)
-                                if label is not None:
-                                    self.samples.append((img_path, label))
+                        # Se la directory esiste, cerca le immagini della persona selezionata
+                        for i, img_file in enumerate(os.listdir(full_dir)):
+                            img_path = os.path.join(full_dir, img_file)
+                            if os.path.isfile(img_path):
+                                if i < self.n_max_images_person: # Limita il numero di immagini per persona
+                                    #print(len(self.samples))
+                                    label = self.true_labels.get(name)
+                                    if label is not None:
+                                        self.samples.append((img_path, label))
         
         if len(self.samples) == 0:
             raise FileNotFoundError(f"Nessuna immagine trovata nella directory {self.images_dir}.")

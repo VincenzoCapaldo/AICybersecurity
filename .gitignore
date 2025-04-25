@@ -1,3 +1,5 @@
 models/*
 dataset/vggface2_train/train/*
 __pycache__/*
+dataset/detectors_train_set/adversarial_examples/*
+dataset/test_set/adversarial_examples/*
