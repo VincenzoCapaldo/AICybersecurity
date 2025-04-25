@@ -138,7 +138,8 @@ def main():
 
     # Generazione del training set avversario
     if args.generate_train:
-        attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+        #attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+        attack_types = ["df", "cw"]
         epsilon_values = [0.01, 0.02, 0.03, 0.04, 0.05]
         confidence_values = [0.1, 0.5, 1, 5, 10]  # Valori per cw
         generate_adversarial_train_set(classifierNN1, attack_types, epsilon_values, confidence_values)
