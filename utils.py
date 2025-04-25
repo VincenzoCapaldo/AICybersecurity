@@ -113,7 +113,7 @@ def show_image(image):
     plt.show()
 
 
-def save_images(images, filename, save_dir):
+def save_images_as_jpg(images, filename, save_dir):
     os.makedirs(save_dir, exist_ok=True)
     filename = filename.replace(".", ",")
     for i, img_array in enumerate(images):
@@ -122,4 +122,23 @@ def save_images(images, filename, save_dir):
         if img_array.dtype == np.float32 or img_array.max() <= 1.0:
             img_array = (img_array * 255).clip(0, 255).astype(np.uint8)
         img = Image.fromarray(img_array)
-        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), 'JPEG')
+        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), format='JPG')
+
+def save_images_as_npy(images, filename, save_dir):
+    os.makedirs(save_dir, exist_ok=True)
+    filename = filename.replace(".", ",")
+    for i, img_array in enumerate(images):
+        filepath = os.path.join(save_dir, f"{filename}_{i}.npy")
+        np.save(filepath, img_array)  # salva l'immagine in formato .npy
+
+def load_images_from_npy_folder(folder_path):
+    # Prendi solo i file .npy nella cartella
+    files = sorted([f for f in os.listdir(folder_path) if f.endswith('.npy')])
+
+    # Carica tutte le immagini
+    images = [np.load(os.path.join(folder_path, f)) for f in files]
+
+    # Convertili in un array NumPy (shape: n x c x h x w)
+    images_array = np.stack(images)
+
+    return images_array

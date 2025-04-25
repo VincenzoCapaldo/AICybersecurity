@@ -62,45 +62,45 @@ def generate_adversarial_train_set(classifier, attack_types, epsilon_values, con
     n_samples = train_images.shape[0]
 
     # Per ogni attacco, calcola il numero di campioni da generare e genera i campioni avversari, salvandoli in una directory
-    for attack in attack_types:
-        if attack in ["fgsm", "bim", "pgd", "df"]:
+    for attack_name in attack_types:
+        if attack_name in ["fgsm", "bim", "pgd", "df"]:
             split_size = n_samples // len(epsilon_values)
-        elif attack == "cw":
+        elif attack_name == "cw":
             split_size = n_samples // len(confidence_values)
 
-        if attack == "fgsm":
+        if attack_name == "fgsm":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
                 x_subset = train_images[start:end]
                 attack = FastGradientMethod(estimator=classifier, eps=eps, targeted=targeted)
                 adv_examples = attack.generate(x=x_subset)
-                save_images(adv_examples, f"eps_{eps}", save_dir + "/fgsm")
+                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir + "/fgsm")
 
-        elif attack == "bim":
+        elif attack_name == "bim":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
                 x_subset = train_images[start:end]
                 attack = BasicIterativeMethod(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
                 adv_examples = attack.generate(x=x_subset)
-                save_images(adv_examples, f"eps_{eps}", save_dir + "/bim")
+                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir + "/bim")
 
-        elif attack == "pgd":
+        elif attack_name == "pgd":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
                 x_subset = train_images[start:end]
                 attack = ProjectedGradientDescent(estimator=classifier, eps=eps, eps_step=0.005, max_iter=10)
                 adv_examples = attack.generate(x=x_subset)
-                save_images(adv_examples, f"eps_{eps}", save_dir + "/pgd")
+                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir + "/pgd")
 
-        elif attack == "df":
+        elif attack_name == "df":
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
                 x_subset = train_images[start:end]
                 attack = DeepFool(classifier=classifier, epsilon = eps, max_iter=5, batch_size=16)
                 adv_examples = attack.generate(x=x_subset)
-                save_images(adv_examples, f"eps_{eps}", save_dir + "/df")
+                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir + "/df")
 
-        elif attack == "cw":
+        elif attack_name == "cw":
             for i, conf in enumerate(confidence_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
                 x_subset = train_images[start:end]
@@ -112,14 +112,14 @@ def generate_adversarial_train_set(classifier, attack_types, epsilon_values, con
                     batch_size=8
                 )
                 adv_examples = attack.generate(x=x_subset)
-                save_images(adv_examples, f"confidence_{conf}", save_dir + "/cw")
+                save_images_as_npy(adv_examples, f"confidence_{conf}", save_dir + "/cw")
 
-        print (f"Dataset generato per l'attacco:{attack}")
+        print (f"Dataset generato per l'attacco: {attack_name}")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--generate_train', type=bool, default=False, help='Se True, genera il train adv set; altrimenti no')
+    parser.add_argument('--generate_train', type=bool, default=True, help='Se True, genera il train adv set; altrimenti no')
     parser.add_argument('--train_detectors', type=bool, default=True, help='Se True, addestra i detector; altrimenti carica i modelli salvati e procede con la valutazione')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
     parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
@@ -146,9 +146,8 @@ def main():
 
     # Train or load Detectors
     detectors = {}
-    #attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
     # indica i detector da addestrare o caricare
-    attack_types = ["fgsm"]
+    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
 
     # Fase di train dei detector
     if args.train_detectors:
@@ -163,8 +162,8 @@ def main():
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             
             # Trainining set avversario
-            training_set_path = os.path.join("./adversarial_examples", attack_type)
-            train_images_adv = get_train_set(save_dir=training_set_path).get_images()
+            training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples", attack_type)
+            train_images_adv=load_images_from_npy_folder(training_set_path)
 
             # Concatenazione delle immagini clean e avversarie
             x_train_detector = np.concatenate((train_images_clean, train_images_adv), axis=0)
