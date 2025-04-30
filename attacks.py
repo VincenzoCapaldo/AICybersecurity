@@ -44,9 +44,7 @@ class FGSM(AdversarialAttack):
 
         for epsilon in epsilon_values:
             # Generazione delle immagini avversarie
-            print(np.shape(images))
             test_images_adv = self.generate_attack(images, epsilon, targeted, targeted_labels)
-            print(np.shape(test_images_adv))
             save_images_as_npy(test_images_adv, f"eps_{epsilon}", save_dir)
 
         if verbose:
