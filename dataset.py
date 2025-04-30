@@ -154,7 +154,7 @@ class TestSet(Dataset):
 class TrainSet(Dataset):
     def __init__(self, images_dir):
         self.images_dir = images_dir
-        self.n_max_images = 20 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images = 1000 # Numero massimo di immagini del dataset (per fare prove più veloci)
         self.samples = []
 
         if not os.path.isdir(self.images_dir):
@@ -175,11 +175,11 @@ class TrainSet(Dataset):
     def __getitem__(self, idx):
         img_path = self.samples[idx]
         image = Image.open(img_path)
-        if image.size != (160, 160):
+        if image.size != (224, 224):
             #image = transforms.Resize((160,160))(image) # Si puo utilizzare anche questo, ma calano le prestazioni di entrambi
-            image = transforms.Resize(200)(image)
-            image = transforms.CenterCrop(160)(image)
-        image = np.array(image, dtype=np.uint8)
+            image = transforms.Resize(256)(image)
+            image = transforms.CenterCrop(224)(image)
+        image = np.array(image, dtype=np.float32)/255
         return transforms.ToTensor()(image)
     
     def get_images(self):

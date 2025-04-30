@@ -8,7 +8,7 @@ from attacks import FGSM, BIM, PGD, DF, CW
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--generate_train_adv', type=bool, default=False, help='Se True, genera il train adv set; altrimenti genera il test adv set')
+    parser.add_argument('--generate_train_adv', type=bool, default=True, help='Se True, genera il train adv set; altrimenti genera il test adv set')
     parser.add_argument("--targeted", type=bool, default=False, help="Generate targeted attacks")
     parser.add_argument("--verbose", type=bool, default=True, help="Print detailed information during the generation of adversarial examples")
     args = parser.parse_args()
@@ -19,7 +19,6 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim", "pgd"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
