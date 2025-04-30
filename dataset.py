@@ -154,7 +154,7 @@ class TestSet(Dataset):
 class TrainSet(Dataset):
     def __init__(self, images_dir):
         self.images_dir = images_dir
-        self.n_max_images = 20 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images = 1000 # Numero massimo di immagini del dataset (per fare prove più veloci)
         self.samples = []
 
         if not os.path.isdir(self.images_dir):
