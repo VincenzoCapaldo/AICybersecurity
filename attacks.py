@@ -44,7 +44,9 @@ class FGSM(AdversarialAttack):
 
         for epsilon in epsilon_values:
             # Generazione delle immagini avversarie
+            print(np.shape(images))
             test_images_adv = self.generate_attack(images, epsilon, targeted, targeted_labels)
+            print(np.shape(test_images_adv))
             save_images_as_npy(test_images_adv, f"eps_{epsilon}", save_dir)
 
         if verbose:
@@ -154,7 +156,7 @@ class DF(AdversarialAttack):
         super().__init__(classifierNN1, classifierNN2, detectors, threshold)
 
     def generate_attack(self, images, epsilon, max_iter):
-        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, nb_grads=100, batch_size=16)
+        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=16)
         return attack.generate(images)
 
     def generate_test_adv(self, images, epsilon_values, max_iter_values, save_dir, verbose=False):

@@ -267,7 +267,7 @@ def setup_classifierNN1(device, classify=True):
         model=nn1,
         loss=torch.nn.CrossEntropyLoss(),
         optimizer=Adam(nn1.parameters(), lr=0.001),
-        input_shape=(3, 160, 160),
+        input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=NUM_CLASSES,
         clip_values=(0.0, 1.0),

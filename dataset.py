@@ -86,8 +86,8 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
 class TestSet(Dataset):
     def __init__(self, images_dir, csv_path, label_map_path):
         self.images_dir = images_dir
-        self.n_max_person = 2 # Numero massimo di immagini del dataset (per fare prove più veloci)
-        self.n_max_images_person = 1 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_person = 100 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images_person = 10 # Numero massimo di immagini del dataset (per fare prove più veloci)
         
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
@@ -125,10 +125,10 @@ class TestSet(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
-        if image.size != (160, 160):
+        if image.size != (224, 224):
             #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
-            image = transforms.Resize(200)(image)
-            image = transforms.CenterCrop(160)(image)
+            image = transforms.Resize(230)(image)
+            image = transforms.CenterCrop(224)(image)
         image = np.array(image, dtype=np.uint8)
         return transforms.ToTensor()(image), label
 

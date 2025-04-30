@@ -19,7 +19,7 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["df"]
+    attack_types = ["fgsm"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
@@ -137,8 +137,8 @@ def main():
                 attack = DF(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.01, 0.1, 1]
-                max_iter_values = [2]
+                epsilon_values = [50, 100, 200]
+                max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot1", verbose=args.verbose)
 
                 ## PLOT 2 - max_iter variabile ## 

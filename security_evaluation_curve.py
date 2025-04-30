@@ -223,8 +223,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon_values = [0.0, 0.01, 0.1, 1]
-    max_iter = [2]
+    epsilon_values = [0, 50, 100, 200]
+    max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if detectors is None:
