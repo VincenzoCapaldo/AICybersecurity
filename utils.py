@@ -84,25 +84,17 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     return accuracy, n_fp
 
 
-def process_images(images, target_size=(256), use_padding=False):
+def process_images(images):
     processed_images = []
-    mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1 ,1) # media dei canali BGR
+    mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1, 1)
+    
     for image in images:
-        image = torch.from_numpy((image*255).astype(np.uint8))  # Converti in tensore PyTorch
-        if use_padding:
-            current_height, current_width = image.shape[1], image.shape[2]
-            pad_height = (target_size - current_height) // 2
-            pad_width = (target_size - current_width) // 2
-            processed_img = F.pad(image, (pad_width, pad_width, pad_height, pad_height), mode='constant', value=0)
-        else:
-            processed_img = transforms.Resize(target_size)(image)    # Applica Resize
-        processed_img = transforms.CenterCrop(224)(processed_img)
-        processed_img = processed_img.numpy()
-        processed_img = processed_img[[2, 1, 0], :, :].astype(np.float32) # RGB -> BGR
-        processed_img -= mean_bgr
-        processed_images.append(torch.from_numpy(processed_img).float()) 
+        image = image * 255.0  # resta float32
+        image = image[[2, 1, 0], :, :]  # RGB → BGR
+        image -= mean_bgr  # normalizzazione
+        processed_images.append(image)
         
-    return torch.stack(processed_images, dim=0)
+    return np.stack(processed_images, axis=0)
 
 
 def show_image(image):

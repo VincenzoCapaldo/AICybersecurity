@@ -11,7 +11,7 @@ NUM_CLASSES = 8631
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument("--test_classifierNN1", type=bool, default=True, help="If true test on classifierNN1, otherwise test on classifierNN2")
+    parser.add_argument("--test_classifierNN1", type=bool, default=False, help="If true test on classifierNN1, otherwise test on classifierNN2")
     parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
@@ -38,7 +38,7 @@ def main():
 
     # Preprocessing delle immagini per il secondo classificatore
     if not args.test_classifierNN1:
-        images = process_images(images, use_padding=False)
+        images = process_images(images)
 
     # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
     accuracy_clean = compute_accuracy(classifier, images, labels)

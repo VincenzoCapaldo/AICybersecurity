@@ -126,9 +126,9 @@ class TestSet(Dataset):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
         if image.size != (224, 224):
-            image = transforms.Resize(230)(image)
+            image = transforms.Resize(256)(image)
             image = transforms.CenterCrop(224)(image)
-        image = np.array(image, dtype=np.uint8)
+        image = np.array(image, dtype=np.float32)/255
         return transforms.ToTensor()(image), label
 
     def get_true_label(self, name):

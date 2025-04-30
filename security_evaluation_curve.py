@@ -17,6 +17,8 @@ def run_fgsm(classifier, name, targeted, test_set, accuracy_clean, targeted_accu
     epsilon_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore   
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -51,6 +53,8 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -79,6 +83,8 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -107,6 +113,8 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter_values = [1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -141,6 +149,8 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -169,6 +179,8 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -197,6 +209,8 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     max_iter_values = [1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -227,6 +241,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
         else:
@@ -243,6 +259,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
         else:
@@ -268,6 +286,8 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     learning_rate = [0.01]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -296,6 +316,8 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     learning_rate = [0.01]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
@@ -324,6 +346,8 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     learning_rate_values = [0.001, 0.005, 0.01, 0.05, 0.1]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
+        if name == "NN2":
+            img_adv = process_images(img_adv)  # Preprocessing per il secondo classificatore
         if detectors is None:
             accuracies.append(compute_accuracy(classifier, img_adv, clean_labels))
             if targeted:
