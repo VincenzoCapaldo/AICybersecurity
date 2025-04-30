@@ -87,7 +87,7 @@ class TestSet(Dataset):
     def __init__(self, images_dir, csv_path, label_map_path):
         self.images_dir = images_dir
         self.n_max_person = 100 # Numero massimo di immagini del dataset (per fare prove più veloci)
-        self.n_max_images_person = 10 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images_person = 2 # Numero massimo di immagini del dataset (per fare prove più veloci)
         
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")

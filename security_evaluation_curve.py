@@ -14,7 +14,7 @@ def run_fgsm(classifier, name, targeted, test_set, accuracy_clean, targeted_accu
         targeted_accuracies = [targeted_accuracy_clean]
 
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
-    epsilon_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
+    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -48,7 +48,7 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     epsilon_step = [0.005]
     max_iter = [10]
     for img_adv in imgs_adv:
@@ -79,7 +79,7 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon = [0.05]
-    epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
+    epsilon_step_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -99,7 +99,7 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         plot_accuracy(f"{name} BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, targeted, targeted_accuracies)
     else:
-        plot_accuracy(f"{name} BIM Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies)
+        plot_accuracy(f"{name} BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
     
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + target_dir + "/plot3"
@@ -110,7 +110,7 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon = [0.05]
     epsilon_step = [0.005]
-    max_iter_values = [1, 3, 5, 7, 10]
+    max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -144,7 +144,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
     epsilon_step = [0.005]
     max_iter = [10]
     for img_adv in imgs_adv:
@@ -175,7 +175,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon = [0.05]
-    epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
+    epsilon_step_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -195,7 +195,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         plot_accuracy(f"{name} PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, targeted, targeted_accuracies)
     else:
-        plot_accuracy(f"{name} PGD Non-targeted - Accuracy vs Epsilon and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon", epsilon_values, max_perturbations, accuracies)
+        plot_accuracy(f"{name} PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
     
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + target_dir + "/plot3"
@@ -206,7 +206,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon = [0.05]
     epsilon_step = [0.005]
-    max_iter_values = [1, 3, 5, 7, 10]
+    max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":

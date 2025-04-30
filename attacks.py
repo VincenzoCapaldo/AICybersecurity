@@ -41,12 +41,12 @@ class FGSM(AdversarialAttack):
         targeted_labels = None
         if targeted:
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
-
+        i=0
         for epsilon in epsilon_values:
             # Generazione delle immagini avversarie
             test_images_adv = self.generate_attack(images, epsilon, targeted, targeted_labels)
-            save_images_as_npy(test_images_adv, f"eps_{epsilon}", save_dir)
-
+            save_images_as_npy(test_images_adv, f"{i}_eps_{epsilon}", save_dir)
+            i+=1
         if verbose:
             print("Test adversarial examples generated and saved successfully for fgsm.")
 
@@ -55,10 +55,10 @@ class FGSM(AdversarialAttack):
         split_size = n_samples // len(epsilon_values)
 
         for i, eps in enumerate(epsilon_values):
-                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = images[start:end]
-                adv_examples = self.generate_attack(x_subset, eps)
-                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
+            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+            x_subset = images[start:end]
+            adv_examples = self.generate_attack(x_subset, eps)
+            save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for fgsm.")
@@ -80,14 +80,14 @@ class BIM(AdversarialAttack):
         targeted_labels = None
         if targeted:
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
-
+        i=0
         for epsilon in epsilon_values:
             for epsilon_step in epsilon_step_values:
                 for max_iter in max_iter_values:
                     # Generazione delle immagini avversarie
                     test_images_adv = self.generate_attack(images, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
-                    save_images_as_npy(test_images_adv, f"eps_{epsilon};eps-step_{epsilon_step};max_iter_{max_iter}", save_dir)
-        
+                    save_images_as_npy(test_images_adv, f"{i}_eps_{epsilon};eps-step_{epsilon_step};max_iter_{max_iter}", save_dir)
+                    i+=1
         if verbose:
             print("Test adversarial examples generated and saved successfully for bim.")
 
@@ -96,10 +96,10 @@ class BIM(AdversarialAttack):
         split_size = n_samples // len(epsilon_values)
 
         for i, eps in enumerate(epsilon_values):
-                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = images[start:end]
-                adv_examples = self.generate_attack(x_subset, eps, epsilon_step=0.005, max_iter=10)
-                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
+            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+            x_subset = images[start:end]
+            adv_examples = self.generate_attack(x_subset, eps, epsilon_step=0.005, max_iter=10)
+            save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for bim.")
@@ -124,14 +124,14 @@ class PGD(AdversarialAttack):
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
         else:
             targeted_labels = None
-
+        i=0
         for epsilon in epsilon_values:
             for epsilon_step in epsilon_step_values:
                 for max_iter in max_iter_values:
                     # Generazione delle immagini avversarie
                     test_images_adv = self.generate_attack(images, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
-                    save_images_as_npy(test_images_adv, f"eps_{epsilon};eps-step_{epsilon_step};max_iter_{max_iter}", save_dir)
-
+                    save_images_as_npy(test_images_adv, f"{i}_eps_{epsilon};eps-step_{epsilon_step};max_iter_{max_iter}", save_dir)
+                    i+=1
         if verbose:
             print("Test adversarial examples generated and saved successfully for pgd.")
 
@@ -140,11 +140,11 @@ class PGD(AdversarialAttack):
         split_size = n_samples // len(epsilon_values)
 
         for i, eps in enumerate(epsilon_values):
-                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = images[start:end]
-                adv_examples = self.generate_attack(x_subset, eps, epsilon_step=0.005, max_iter=10)
-                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
-        
+            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+            x_subset = images[start:end]
+            adv_examples = self.generate_attack(x_subset, eps, epsilon_step=0.005, max_iter=10)
+            save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
+    
         if verbose:
             print("Training adversarial examples generated and saved successfully for pgd.")
 
@@ -158,11 +158,13 @@ class DF(AdversarialAttack):
         return attack.generate(images)
 
     def generate_test_adv(self, images, epsilon_values, max_iter_values, save_dir, verbose=False):
+        i=0
         for epsilon in epsilon_values:
-                for max_iter in max_iter_values:
-                    # Generazione delle immagini avversarie
-                    test_images_adv = self.generate_attack(images, epsilon, max_iter)
-                    save_images_as_npy(test_images_adv, f"eps_{epsilon};max_iter_{max_iter}", save_dir)
+            for max_iter in max_iter_values:
+                # Generazione delle immagini avversarie
+                test_images_adv = self.generate_attack(images, epsilon, max_iter)
+                save_images_as_npy(test_images_adv, f"{i}_eps_{epsilon};max_iter_{max_iter}", save_dir)
+                i+=1
 
         if verbose:
             print("Test adversarial examples generated and saved successfully for df.")
@@ -172,10 +174,10 @@ class DF(AdversarialAttack):
         split_size = n_samples // len(epsilon_values)
 
         for i, eps in enumerate(epsilon_values):
-                start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
-                x_subset = images[start:end]
-                adv_examples = self.generate_attack(x_subset, eps, max_iter=5)
-                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
+            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+            x_subset = images[start:end]
+            adv_examples = self.generate_attack(x_subset, eps, max_iter=5)
+            save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for df.")
@@ -201,14 +203,14 @@ class CW(AdversarialAttack):
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
         else:
             targeted_labels = None
-
+        i=0
         for confidence in confidence_values:
             for max_iter in max_iter_values:
                 for learning_rate in learning_rate_values:
                     # Generazione delle immagini avversarie
                     test_images_adv = self.generate_attack(images, confidence, max_iter, learning_rate, targeted, targeted_labels)
-                    save_images_as_npy(test_images_adv, f"conf_{confidence};max_iter_{max_iter};lr_{learning_rate}", save_dir)
-
+                    save_images_as_npy(test_images_adv, f"{i}_conf_{confidence};max_iter_{max_iter};lr_{learning_rate}", save_dir)
+                    i+=1
         if verbose:
             print("Test adversarial examples generated and saved successfully for cw.")
 
@@ -217,10 +219,10 @@ class CW(AdversarialAttack):
         split_size = n_samples // len(confidence_values)
 
         for i, conf in enumerate(confidence_values):
-                start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
-                x_subset = images[start:end]
-                adv_examples = self.generate_attack(x_subset, conf, learning_rate=0.01, max_iter=5)
-                save_images_as_npy(adv_examples, f"conf_{conf}", save_dir)
-        
+            start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values) - 1 else n_samples
+            x_subset = images[start:end]
+            adv_examples = self.generate_attack(x_subset, conf, learning_rate=0.01, max_iter=5)
+            save_images_as_npy(adv_examples, f"conf_{conf}", save_dir)
+    
         if verbose:
             print("Training adversarial examples generated and saved successfully for cw.")

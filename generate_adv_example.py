@@ -79,7 +79,7 @@ def main():
                 attack = FGSM(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05]
+                epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
                 attack.generate_test_adv(test_images, epsilon_values, save_dir, args.targeted, target_class, verbose=args.verbose)
 
             elif attack_name == "bim":
@@ -151,7 +151,6 @@ def main():
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = CW(classifier)
-                values = [0.1, 0.5, 1, 5, 10]
 
                 ## PLOT 1 - confidence variabile ##
                 confidence_values = [0.1, 0.5, 1, 2, 5, 10]

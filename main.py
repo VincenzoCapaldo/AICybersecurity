@@ -11,13 +11,14 @@ NUM_CLASSES = 8631
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument("--test_classifierNN1", type=bool, default=False, help="If true test on classifierNN1, otherwise test on classifierNN2")
-    parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
+    parser.add_argument("--test_classifierNN1", type=bool, default=True, help="If true test on classifierNN1, otherwise test on classifierNN2")
     parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
     
-    # Attacco selezionato
-    print(f"Selected attack: {args.attack}")
+    # Attacchi selezionato
+    attacks = ["fgsm", "bim", "pgd", "df", "cw"]
+    attacks = ["df"]
+    print(f"Selected attacks: {attacks}")
     print(f"Targeted attack: {args.targeted}")
     
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -52,15 +53,15 @@ def main():
     print(f"Targeted accuracy del classificatore {name} su dati clean: {targeted_accuracy_clean}")
 
     # Avvio dell'attacco selezionato
-    if args.attack == "fgsm":
+    if "fgsm" in attacks:
         run_fgsm(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
-    elif args.attack == "bim":
+    if "bim" in attacks:
         run_bim(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
-    elif args.attack == "pgd":
+    if "pgd" in attacks:
         run_pgd(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
-    elif args.attack == "df":
+    if "df" in attacks:
         run_df(classifier, name, test_set, accuracy_clean)
-    elif args.attack == "cw":
+    if "cw" in attacks:
         run_cw(classifier, name, args.targeted, test_set, accuracy_clean, targeted_accuracy_clean, target_class)
 
 
