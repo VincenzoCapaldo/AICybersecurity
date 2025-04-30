@@ -44,7 +44,7 @@ def main():
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/pgd"
             elif attack_name == "df":
                 # Inizializza il classificatore
-                classifier = setup_classifierNN1(device=device, classify=False)
+                classifier = setup_classifierNN1(device=device)
                 attack = DF(classifier)
                 values = [0.01, 0.02, 0.03, 0.04, 0.05]
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/df"
@@ -60,7 +60,7 @@ def main():
             # Training set di partenza, con immagini clean
             train_images = get_train_set().get_images()
             attack.generate_train_adv(train_images, values, save_dir, verbose=args.verbose)
-
+            
     # Generazione del test set avversario
     else:
         # Test set di partenza, con immagini clean

@@ -126,7 +126,6 @@ class TestSet(Dataset):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
         if image.size != (224, 224):
-            #image = transforms.Resize((160,160))(image) # SI puo utilizzare anche questo, ma calano le prestazioni di entrambi
             image = transforms.Resize(230)(image)
             image = transforms.CenterCrop(224)(image)
         image = np.array(image, dtype=np.uint8)
