@@ -237,7 +237,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon_values = [0, 50, 100, 200]
+    epsilon_values = [0, 1, 10, 50, 100]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -255,8 +255,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon = [0.05]
-    max_iter_values = [0, 1, 3, 5, 7, 10]
+    epsilon = [1]
+    max_iter_values = [0, 1, 3, 5, 7, 10, 100]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -281,7 +281,7 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    confidence_values = [0.1, 0.5, 1, 2, 5, 10]
+    confidence_values = [0.0, 0.001, 0.01, 0.1, 1, 10]
     max_iter = [5]
     learning_rate = [0.01]
     for img_adv in imgs_adv:
@@ -312,7 +312,7 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
     confidence = [0.5]
-    max_iter_values = [1, 3, 5, 7, 10]
+    max_iter_values = [0, 1, 3, 5, 7, 10]
     learning_rate = [0.01]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -343,7 +343,7 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
         targeted_accuracies = [targeted_accuracy_clean]
     confidence = [0.5]
     max_iter = [5]
-    learning_rate_values = [0.001, 0.005, 0.01, 0.05, 0.1]
+    learning_rate_values = [0.0, 0.001, 0.01, 0.1]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
