@@ -8,7 +8,7 @@ from attacks import FGSM, BIM, PGD, DF, CW
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--generate_train_adv', type=bool, default=True, help='Se True, genera il train adv set; altrimenti genera il test adv set')
+    parser.add_argument('--generate_train_adv', type=bool, default=False, help='Se True, genera il train adv set; altrimenti genera il test adv set')
     parser.add_argument("--targeted", type=bool, default=False, help="Generate targeted attacks")
     parser.add_argument("--verbose", type=bool, default=True, help="Print detailed information during the generation of adversarial examples")
     args = parser.parse_args()
@@ -19,6 +19,7 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+    attack_types = ["df"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
@@ -136,12 +137,12 @@ def main():
                 attack = DF(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [50, 100, 200]
+                epsilon_values = [1, 10, 100]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot1", verbose=args.verbose)
 
                 ## PLOT 2 - max_iter variabile ## 
-                epsilon_values = [0.05]
+                epsilon_values = [10]
                 max_iter_values = [1, 3, 5, 7, 10]
                 attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot2", verbose=args.verbose)
 
