@@ -99,7 +99,7 @@ def run_bim(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         plot_accuracy(f"{name} BIM Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, targeted, targeted_accuracies)
     else:
-        plot_accuracy(f"{name} BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
+        plot_accuracy(f"{name} BIM Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
     
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + target_dir + "/plot3"
@@ -145,7 +145,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-    epsilon_step = [0.005]
+    epsilon_step = [0.01]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -195,7 +195,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         plot_accuracy(f"{name} PGD Targeted - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, targeted, targeted_accuracies)
     else:
-        plot_accuracy(f"{name} PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon_step={epsilon_step}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
+        plot_accuracy(f"{name} PGD Non-targeted - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies)
     
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + target_dir + "/plot3"
@@ -205,7 +205,7 @@ def run_pgd(classifier, name, targeted, test_set, accuracy_clean, targeted_accur
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
     epsilon = [0.05]
-    epsilon_step = [0.005]
+    epsilon_step = [0.01]
     max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -281,8 +281,8 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    confidence_values = [0.0, 0.001, 0.01, 0.1, 1, 10]
-    max_iter = [5]
+    confidence_values = [0.0, 0.01, 0.1, 1]
+    max_iter = [3]
     learning_rate = [0.01]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -311,8 +311,8 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    confidence = [0.5]
-    max_iter_values = [0, 1, 3, 5, 7, 10]
+    confidence = [0.1]
+    max_iter_values = [0, 1, 3, 5]
     learning_rate = [0.01]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -341,9 +341,9 @@ def run_cw(classifier, name, targeted, test_set, accuracy_clean, targeted_accura
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    confidence = [0.5]
-    max_iter = [5]
-    learning_rate_values = [0.0, 0.001, 0.01, 0.1]
+    confidence = [0.1]
+    max_iter = [3]
+    learning_rate_values = [0.0, 0.01, 0.05, 0.1]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
