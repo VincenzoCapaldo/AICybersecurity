@@ -86,8 +86,8 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
 class TestSet(Dataset):
     def __init__(self, images_dir, csv_path, label_map_path):
         self.images_dir = images_dir
-        self.n_max_person = 20 # Numero massimo di immagini del dataset (per fare prove più veloci)
-        self.n_max_images_person = 1 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_person = 101 # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images_person = 11 # Numero massimo di immagini del dataset (per fare prove più veloci)
         
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
