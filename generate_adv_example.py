@@ -51,7 +51,7 @@ def main():
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = CW(classifier)
-                values = [0.1, 0.5, 1, 5, 10]
+                values = [0.01, 0.1, 1]
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/cw"
             else:
                 raise ValueError(f"Unknown attack type: {attack_name}")
@@ -113,7 +113,7 @@ def main():
 
                 ## PLOT 1 - epsilon variabile ##
                 epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-                epsilon_step_values = [0.005]
+                epsilon_step_values = [0.01]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot1", args.targeted, target_class, verbose=args.verbose)
                 
@@ -125,7 +125,7 @@ def main():
 
                 ## PLOT 3 - max_iter variabile ##
                 epsilon_values = [0.05]
-                epsilon_step_values = [0.005]
+                epsilon_step_values = [0.01]
                 max_iter_values = [1, 3, 5, 7, 10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot3", args.targeted, target_class, verbose=args.verbose)
 
@@ -152,21 +152,21 @@ def main():
                 attack = CW(classifier)
 
                 ## PLOT 1 - confidence variabile ##
-                confidence_values = [0.001, 0.01, 0.1, 1, 10]
-                max_iter_values = [5]
+                confidence_values = [0.01, 0.1, 1]
+                max_iter_values = [3]
                 learning_rate_values = [0.01]
                 attack.generate_test_adv(test_images, confidence_values, max_iter_values, learning_rate_values, save_dir + "/plot1", args.targeted, target_class, verbose=args.verbose)
                 
                 ## PLOT 2 - max_iter variabile ##
                 confidence_values = [0.1]
-                max_iter_values = [1, 3, 5, 7, 10]
+                max_iter_values = [1, 3, 5]
                 learning_rate_values = [0.01]
                 attack.generate_test_adv(test_images, confidence_values, max_iter_values, learning_rate_values, save_dir + "/plot2", args.targeted, target_class, verbose=args.verbose)
 
                 ## PLOT 3 - learning_rate variabile ##
-                confidence_values = [0.5]
-                max_iter_values = [5]
-                learning_rate_values = [0.001, 0.01, 0.1]
+                confidence_values = [0.1]
+                max_iter_values = [3]
+                learning_rate_values = [0.01, 0.05, 0.1]
                 attack.generate_test_adv(test_images, confidence_values, max_iter_values, learning_rate_values, save_dir + "/plot3", args.targeted, target_class, verbose=args.verbose)
 
             else:

@@ -151,10 +151,10 @@ class PGD(AdversarialAttack):
             start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
             x_subset_untargeted = images[start:(start+end)//2]
             x_subset_targeted = images[(start+end)//2:end]
-            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.005, max_iter=10)
+            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
             save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
             targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-            adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.005, max_iter=10, targeted=True, targeted_labels=targeted_labels)
+            adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
             save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
         
         if verbose:
@@ -234,10 +234,10 @@ class CW(AdversarialAttack):
             start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values)-1 else n_samples
             x_subset_untargeted = images[start:(start+end)//2]
             x_subset_targeted = images[(start+end)//2:end]
-            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=5)
+            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=3)
             save_images_as_npy(adv_examples_untargeted, f"untargeted_conf_{conf}", save_dir)
             targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-            adv_examples_targeted = self.generate_attack(x_subset_targeted, conf, learning_rate=0.01, max_iter=5, targeted=True, targeted_labels=targeted_labels)
+            adv_examples_targeted = self.generate_attack(x_subset_targeted, conf, learning_rate=0.01, max_iter=3, targeted=True, targeted_labels=targeted_labels)
             save_images_as_npy(adv_examples_targeted, f"targeted_conf_{conf}", save_dir)
             
         if verbose:
