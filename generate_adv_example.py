@@ -143,7 +143,7 @@ def main():
 
                 ## PLOT 2 - max_iter variabile ## 
                 epsilon_values = [10]
-                max_iter_values = [1, 3, 5, 7, 10]
+                max_iter_values = [1, 5, 10]
                 attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot2", verbose=args.verbose)
 
             elif attack_name == "cw":
