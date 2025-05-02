@@ -166,7 +166,7 @@ class DF(AdversarialAttack):
         super().__init__(classifierNN1, classifierNN2, detectors, threshold)
 
     def generate_attack(self, images, epsilon, max_iter):
-        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=16)
+        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=32)
         return attack.generate(images)
 
     def generate_test_adv(self, images, epsilon_values, max_iter_values, save_dir, verbose=False):
@@ -186,7 +186,7 @@ class DF(AdversarialAttack):
         split_size = n_samples // len(epsilon_values)
 
         for i, eps in enumerate(epsilon_values):
-            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values) - 1 else n_samples
+            start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
             x_subset = images[start:end]
             adv_examples = self.generate_attack(x_subset, eps, max_iter=5)
             save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
