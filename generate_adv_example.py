@@ -19,7 +19,7 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim", "pgd"]
+    attack_types = ["df"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
