@@ -399,3 +399,4 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, 
     os.makedirs(plot_dir, exist_ok=True)
     plt.savefig(save_path)
     print(f"Plot {title}.png salvato.")
+    plt.close()
