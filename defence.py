@@ -11,7 +11,7 @@ from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_detectors', type=bool, default=False, help='Se True, addestra i detector; altrimenti carica i modelli salvati e procede con la valutazione')
+    parser.add_argument('--train_detectors', type=bool, default=True, help='Se True, addestra i detector; altrimenti carica i modelli salvati e procede con la valutazione')
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
     parser.add_argument("--attack", type=str, default="fgsm", choices=["fgsm", "bim", "pgd", "df", "cw"], help="Type of attack to test")
     parser.add_argument("--targeted", type=bool, default=False, help="Test on targeted attack")
@@ -28,6 +28,7 @@ def main():
     detectors = {}
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+    attack_types = ["fgsm"]
 
     # Fase di train dei detector
     if args.train_detectors:
@@ -44,6 +45,8 @@ def main():
             # Trainining set avversario
             training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples", attack_type)
             train_images_adv=load_images_from_npy_folder(training_set_path)
+            train_images_adv = np.array(train_images_adv).reshape(-1, 3, 224, 224)
+            #print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
 
             # Concatenazione delle immagini clean e avversarie
             x_train_detector = np.concatenate((train_images_clean, train_images_adv), axis=0)
