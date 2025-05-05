@@ -304,7 +304,7 @@ def setup_detector_classifier(device):
         filter(lambda p: p.requires_grad, detector.parameters()), 
         lr=1e-3
         ),
-        input_shape=(3, 160, 160),
+        input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=2,
         clip_values=(-0.5, 0.5),
