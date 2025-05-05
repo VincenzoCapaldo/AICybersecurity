@@ -306,6 +306,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, targeted=False, targeted_
     else:
         plot_accuracy(f"{name} - Accuracy vs Confidence and Max Perturbations (Max_iter={max_iter}; Learning_rate={learning_rate})", "Confidence", confidence_values, max_perturbations, accuracies, attack_dir)
     
+    ''' 
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con confidence e learning_rate fissati)
     load_dir = images_dir + attack_dir + "/plot2"
     imgs_adv = load_images_from_npy_folder(load_dir)
@@ -335,7 +336,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, targeted=False, targeted_
         plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
     else:
         plot_accuracy(f"{name} - Accuracy vs Max Iterations and Max Perturbations (Confidence={confidence}; Learning_rate={learning_rate})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir)
-        
+
     # Calcolo dell'accuracy al variare del learning_rate e della perturbazione massima (con confidence e max_iter fissati)
     load_dir = images_dir + attack_dir + "/plot3"
     imgs_adv = load_images_from_npy_folder(load_dir)
@@ -365,7 +366,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, targeted=False, targeted_
         plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
     else:
         plot_accuracy(f"{name} - Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies, attack_dir)
-
+    '''
 
 def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, targeted=False, targeted_accuracies=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))

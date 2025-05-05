@@ -54,8 +54,8 @@ def main():
         run_pgd(classifier, name, test_set, accuracy_clean)
     if "df" in attacks:
         run_df(classifier, name, test_set, accuracy_clean)
-    if "cw" in attacks:
-        run_cw(classifier, name, test_set, accuracy_clean)
+    #if "cw" in attacks:
+        #run_cw(classifier, name, test_set, accuracy_clean)
 
     # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
     target_class_label = "Cristiano_Ronaldo"
@@ -66,13 +66,13 @@ def main():
 
     # Avvio dell'attacco selezionato TARGETED
     if "fgsm" in attacks:
-        run_fgsm(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, 0)
+        run_fgsm(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, target_class)
     if "bim" in attacks:
-        run_bim(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, 0)
+        run_bim(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, target_class)
     if "pgd" in attacks:
-        run_pgd(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, 0)
+        run_pgd(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, target_class)
     if "cw" in attacks:
-        run_cw(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, 0)
+        run_cw(classifier, name, test_set, accuracy_clean, True, targeted_accuracy_clean, target_class)
 
 
 if __name__ == "__main__":
