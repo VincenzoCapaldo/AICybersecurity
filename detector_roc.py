@@ -45,14 +45,18 @@ def main():
         print(f"Detector caricato da: {model_path}")
 
         # solo per prova
-        images_dir = "./dataset/detectors_train_set/adversarial_examples/" + attack_type
+        images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
         #target_dir = "targeted" if targeted else "untargeted"
         imgs_adv = load_images_from_npy_folder(images_dir)
         imgs_adv = np.array(imgs_adv).reshape(-1, 3, 224, 224)
-        adversarial_probs = []
-        final_labels = []
-        adv_test = []
-        #print(f"Shape dati clean: {np.shape(sampled_images)} \nShape dati adversarial: {np.shape(imgs_adv)}")
+        selected = []
+
+        # seleziono 200 immagini per ogni attacco
+        for i in range(0, imgs_adv.shape[0], 1000):
+            selected.append(imgs_adv[i:i+200])
+        imgs_adv = np.concatenate(selected, axis=0)
+        
+        print(f"Shape dati clean: {np.shape(sampled_images)} \nShape dati adversarial: {np.shape(imgs_adv)}")
         adv_labels = np.ones(len(imgs_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
         final_test = np.concatenate((imgs_adv, sampled_images), axis=0)
         #print(f"final test shape: {np.shape(final_test)}")
