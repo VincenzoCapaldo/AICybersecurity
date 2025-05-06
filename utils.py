@@ -165,9 +165,3 @@ def compute_roc_curve(true_label, model_predictions, title="Roc curve", save_plo
         plt.show()
     if save_plot:
         plt.savefig(save_dir + title + ".png")
-
-    # trova la miglior threshold. Usa la youden's J statistic. (molto probabilmente inutile)
-    j_scores = tpr - fpr
-    best_idx = j_scores.argmax()
-    best_threshold = thresholds[best_idx]
-    return best_threshold

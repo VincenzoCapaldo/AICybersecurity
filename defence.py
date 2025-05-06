@@ -28,7 +28,7 @@ def main():
     detectors = {}
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm"]
+    attack_types = ["pgd"]
 
     # Fase di train dei detector
     if args.train_detectors:
@@ -46,13 +46,14 @@ def main():
             training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples", attack_type)
             train_images_adv=load_images_from_npy_folder(training_set_path)
             train_images_adv = np.array(train_images_adv).reshape(-1, 3, 224, 224)
-            #print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
+            print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
+            print(f"Train clean images shape: {np.shape(train_images_clean)}")
 
             # Concatenazione delle immagini clean e avversarie
             x_train_detector = np.concatenate((train_images_clean, train_images_adv), axis=0)
 
             # Creazione delle etichette per il training set
-            y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * nb_train)), axis=0)
+            y_train_detector = np.concatenate((np.array([[1, 0]] * nb_train), np.array([[0, 1]] * np.shape(train_images_adv)[0])), axis=0)
 
             # Inizio addestramento del detector
             detectors[attack_type].fit(x_train_detector, y_train_detector, nb_epochs=20, batch_size=16, verbose=True)
