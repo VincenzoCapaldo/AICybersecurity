@@ -54,8 +54,8 @@ def main():
         run_pgd(classifier, name, test_set, accuracy_clean)
     if "df" in attacks:
         run_df(classifier, name, test_set, accuracy_clean)
-    #if "cw" in attacks:
-        #run_cw(classifier, name, test_set, accuracy_clean)
+    if "cw" in attacks:
+        run_cw(classifier, name, test_set, accuracy_clean)
 
     # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
     target_class_label = "Cristiano_Ronaldo"
