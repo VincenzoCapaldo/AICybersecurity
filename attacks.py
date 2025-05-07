@@ -127,11 +127,8 @@ class PGD(AdversarialAttack):
 
     def generate_test_adv(self, images, epsilon_values, epsilon_step_values, max_iter_values, save_dir, targeted=False, target_class=0, verbose=False):
         targeted_labels = None
-        
         if targeted:
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
-        else:
-            targeted_labels = None
         i=0
         for epsilon in epsilon_values:
             for epsilon_step in epsilon_step_values:
@@ -200,8 +197,7 @@ class CW(AdversarialAttack):
         super().__init__(classifierNN1, classifierNN2, detectors, threshold)
 
     def generate_attack(self, images, confidence, max_iter, learning_rate, targeted=False, targeted_labels=None):
-        attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, 
-                                   learning_rate=learning_rate, batch_size=16, targeted=targeted)
+        attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, batch_size=16, targeted=targeted)
         if targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)
@@ -210,11 +206,8 @@ class CW(AdversarialAttack):
 
     def generate_test_adv(self, images, confidence_values, max_iter_values, learning_rate_values, save_dir, targeted=False, target_class=0, verbose=False):
         targeted_labels = None
-        
         if targeted:
             targeted_labels = target_class * torch.ones(len(images), dtype=torch.long)
-        else:
-            targeted_labels = None
         i=0
         for confidence in confidence_values:
             for max_iter in max_iter_values:
