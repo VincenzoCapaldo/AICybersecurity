@@ -79,7 +79,7 @@ def main():
                 attack = FGSM(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+                epsilon_values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
                 attack.generate_test_adv(test_images, epsilon_values, save_dir, args.targeted, target_class, verbose=args.verbose)
 
             elif attack_name == "bim":
@@ -89,20 +89,20 @@ def main():
                 attack = BIM(classifier)
                 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-                epsilon_step_values = [0.005]
+                epsilon_values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
+                epsilon_step_values = [0.01]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot1", args.targeted, target_class, verbose=args.verbose)
                 
                 ## PLOT 2 - epsilon_step variabile ##
-                epsilon_values = [0.05]
-                epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
+                epsilon_values = [0.1]
+                epsilon_step_values = [0.01, 0.02, 0.03, 0.04, 0.05]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot2", args.targeted, target_class, verbose=args.verbose)
 
                 ## PLOT 3 - max_iter variabile ##
-                epsilon_values = [0.05]
-                epsilon_step_values = [0.005]
+                epsilon_values = [0.1]
+                epsilon_step_values = [0.01]
                 max_iter_values = [1, 3, 5, 7, 10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot3", args.targeted, target_class, verbose=args.verbose)
 
@@ -113,19 +113,19 @@ def main():
                 attack = PGD(classifier)
 
                 ## PLOT 1 - epsilon variabile ##
-                epsilon_values = [0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+                epsilon_values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
                 epsilon_step_values = [0.01]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot1", args.targeted, target_class, verbose=args.verbose)
                 
                 ## PLOT 2 - epsilon_step variabile ##
-                epsilon_values = [0.05]
-                epsilon_step_values = [0.005, 0.01, 0.015, 0.02, 0.025]
+                epsilon_values = [0.1]
+                epsilon_step_values = [0.01, 0.02, 0.03, 0.04, 0.05]
                 max_iter_values = [10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot2", args.targeted, target_class, verbose=args.verbose)
 
                 ## PLOT 3 - max_iter variabile ##
-                epsilon_values = [0.05]
+                epsilon_values = [0.1]
                 epsilon_step_values = [0.01]
                 max_iter_values = [1, 3, 5, 7, 10]
                 attack.generate_test_adv(test_images, epsilon_values, epsilon_step_values, max_iter_values, save_dir + "/plot3", args.targeted, target_class, verbose=args.verbose)

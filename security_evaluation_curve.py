@@ -15,7 +15,7 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, targeted=False, targete
         targeted_accuracies = [targeted_accuracy_clean]
 
     # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima
-    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.0, 0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -49,8 +49,8 @@ def run_bim(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
-    epsilon_step = [0.005]
+    epsilon_values = [0.0, 0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
+    epsilon_step = [0.01]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -79,8 +79,8 @@ def run_bim(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon = [0.05]
-    epsilon_step_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
+    epsilon = [0.1]
+    epsilon_step_values = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -109,8 +109,8 @@ def run_bim(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon = [0.05]
-    epsilon_step = [0.005]
+    epsilon = [0.1]
+    epsilon_step = [0.01]
     max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -145,7 +145,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon_values = [0.0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05]
+    epsilon_values = [0.0, 0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
     epsilon_step = [0.01]
     max_iter = [10]
     for img_adv in imgs_adv:
@@ -175,8 +175,8 @@ def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon = [0.05]
-    epsilon_step_values = [0.0, 0.005, 0.01, 0.015, 0.02, 0.025]
+    epsilon = [0.1]
+    epsilon_step_values = [0.0, 0.01, 0.02, 0.03, 0.04, 0.05]
     max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
@@ -205,7 +205,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted
     accuracies = [accuracy_clean]
     if targeted:
         targeted_accuracies = [targeted_accuracy_clean]
-    epsilon = [0.05]
+    epsilon = [0.1]
     epsilon_step = [0.01]
     max_iter_values = [0, 1, 3, 5, 7, 10]
     for img_adv in imgs_adv:
@@ -389,7 +389,7 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, 
     else:
         axes[1].legend(["Accuracy"], loc="upper right")
     axes[1].set_xlabel("Max Perturbations")
-    axes[1].axvline(x=0.05, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
+    axes[1].axvline(x=0.1, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
     axes[1].grid()
     
     plt.tight_layout()
