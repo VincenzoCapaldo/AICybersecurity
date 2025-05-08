@@ -5,20 +5,13 @@ import shutil
 import random
 import os
 from PIL import Image
-from facenet_pytorch import MTCNN
-import torch
 from torchvision import transforms
 from tqdm import tqdm
-import numpy as np
-import torch
 
-# Funzione per processare le immagini del test set, portandole ad una size di 224x224 float [-1,1]
+# Funzione per processare le immagini del test set, portandole ad una size di 224x224
 def process_test_set(dataset_directory_destination, dataset_directory_processed):
-    # Inizializza MTCNN
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    mtcnn = MTCNN(image_size=224, margin=80, select_largest=True, post_process=False, device=device)
-
-    def salva_immagine_con_struttura(orig_path, face_img):
+    
+    def save_image(orig_path, face_img):
         relative_path = os.path.relpath(orig_path, dataset_directory_destination)
         save_path = os.path.join(dataset_directory_processed, relative_path)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -30,19 +23,10 @@ def process_test_set(dataset_directory_destination, dataset_directory_processed)
                 img_path = os.path.join(root, fname)
                 try:
                     image = Image.open(img_path).convert("RGB")
-                    face = mtcnn(image)
-                    if face is not None:
-                        face_np = face.permute(1, 2, 0).cpu().numpy().astype(np.uint8)  # normalizzazione [-1, 1]
-                        face_pil = Image.fromarray(face_np)
-                    else:
-                        print(f"[!] Volto non rilevato: {img_path}")
-                        # Effettua un resize + center_crop
-                        resize, crop = 256, 224
-                        image = image.resize((resize, resize))
-                        face_pil = image.crop(((resize-crop)//2, (resize-crop)//2, (resize+crop)//2, (resize+crop)//2))
-                        face_pil = face_pil.resize((224, 224))
-
-                    salva_immagine_con_struttura(img_path, face_pil)
+                    if image.size != (224, 224):
+                        image = transforms.Resize(240)(image)
+                        image = transforms.CenterCrop(224)(image)
+                    save_image(img_path, image)
 
                 except Exception as e:
                     print(f"[X] Errore con immagine {img_path}: {e}")
