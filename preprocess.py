@@ -23,9 +23,8 @@ def process_test_set(dataset_directory_destination, dataset_directory_processed)
                 img_path = os.path.join(root, fname)
                 try:
                     image = Image.open(img_path).convert("RGB")
-                    if image.size != (224, 224):
-                        image = transforms.Resize(240)(image)
-                        image = transforms.CenterCrop(224)(image)
+                    image = transforms.Resize(256)(image)
+                    image = transforms.CenterCrop(224)(image)
                     save_image(img_path, image)
 
                 except Exception as e:

@@ -6,8 +6,8 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-# Original usa resize + centercrop, processed utilizza rete mtcnn
-def get_test_set(images_dir="./dataset/test_set/clean/original", csv_path="./dataset/test_set/test_set.csv", 
+# processed utilizza immagini con resize + centercrop
+def get_test_set(images_dir="./dataset/test_set/clean/processed", csv_path="./dataset/test_set/test_set.csv", 
                  label_map_path="./dataset/rcmalli_vggface_labels_v2.npy"):
     return TestSet(images_dir, csv_path, label_map_path)
 
@@ -59,11 +59,8 @@ class TestSet(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
-        if image.size != (224, 224):
-            image = transforms.Resize((224,224))(image)
-            #image = transforms.CenterCrop(224)(image)
-        image = np.array(image, dtype=np.float32)/255.0
-        image = (image - 0.5) / 0.5
+        image = np.array(image, dtype=np.float32)/255.0     # porta l'immagine nell'intervallo [0, 1]
+        image = (image * 2.0) - 1.0                         # porta l'immagine nell'intevallo [-1, 1]
         return transforms.ToTensor()(image), label
 
     def get_true_label(self, name):
@@ -110,11 +107,8 @@ class TrainSet(Dataset):
     def __getitem__(self, idx):
         img_path = self.samples[idx]
         image = Image.open(img_path)
-        if image.size != (224, 224):
-            #image = transforms.Resize((160,160))(image) # Si puo utilizzare anche questo, ma calano le prestazioni di entrambi
-            image = transforms.Resize(256)(image)
-            image = transforms.CenterCrop(224)(image)
-        image = np.array(image, dtype=np.float32)/255
+        image = np.array(image, dtype=np.float32)/255.0     # porta l'immagine nell'intervallo [0, 1]
+        image = (image * 2.0) - 1.0                         # porta l'immagine nell'intevallo [-1, 1]
         return transforms.ToTensor()(image)
     
     def get_images(self):
