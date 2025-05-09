@@ -1,16 +1,17 @@
 import os
 import numpy as np
-import torch
-import torch.nn.functional as F
 from sklearn.metrics import accuracy_score, roc_curve, auc
-from torchvision import transforms
 import matplotlib.pyplot as plt
 from scipy.special import softmax
 from PIL import Image
+from nets import setup_detector_classifier
+from art.defences.detector.evasion import BinaryInputDetector
+import torch
 
 
 def compute_max_perturbation(test_images, test_images_adv):
     return np.max(np.abs(test_images_adv - test_images))
+
 
 def compute_accuracy(classifier, x_test, y_test):
     # Predizioni del modello (output con le probabilità per ogni classe)
@@ -18,7 +19,6 @@ def compute_accuracy(classifier, x_test, y_test):
 
     # Convertiamo da probabilità a etichette (argmax sulle colonne)
     y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
-    #print("predizioni: ", y_pred_labels)
 
     # Calcoliamo l'accuratezza
     accuracy = accuracy_score(y_pred_labels, y_test)
@@ -85,12 +85,25 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     return accuracy, n_fp
 
 
+def load_detectors(attack_types, device):
+    detectors = {}
+    for attack_type in attack_types:
+            model_path = os.path.join("./models", f"{attack_type}_detector.pth")
+            detector_classifier = setup_detector_classifier(device)
+            detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
+            detector_classifier.model.eval()
+            detectors[attack_type] = BinaryInputDetector(detector_classifier)
+            print(f"Detector caricato da: {model_path}")
+    return detectors
+
+
+# Funzione per processare le immagini dalla rete NN1 alla rete NN2
 def process_images(images):
     processed_images = []
     mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1, 1)
     
     for image in images:
-        image = (image + 1.0)  * (255.0 / 2)  # resta float32
+        image = (image + 1.0)  * (255.0 / 2)  # float32 [-1, 1] -> [0, 255]
         image = image[[2, 1, 0], :, :]  # RGB → BGR
         image -= mean_bgr  # normalizzazione
         processed_images.append(image)
@@ -165,3 +178,38 @@ def compute_roc_curve(true_label, model_predictions, title="Roc curve", title_im
         plt.show()
     if save_plot:
         plt.savefig(save_dir + title_image + ".png")
+
+
+def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, targeted=False, targeted_accuracies=None):
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+    fig.suptitle(title, fontsize=16)
+    #print(x, max_perturbations, accuracies)
+    # Accuracy and Targeted Accuracy vs x
+    axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
+    if targeted:
+        axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[0].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
+    else:
+        axes[0].legend(["Accuracy"], loc="upper right")
+    axes[0].set_xlabel(x_title)
+    axes[0].grid()
+
+    # Accuracy and Targeted Accuracy vs Max Perturbations
+    axes[1].plot(max_perturbations, accuracies, marker='o', linestyle='-', color='b')
+    if targeted:
+        axes[1].plot(max_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[1].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
+    else:
+        axes[1].legend(["Accuracy"], loc="upper right")
+    axes[1].set_xlabel("Max Perturbations")
+    axes[1].axvline(x=0.1, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
+    axes[1].grid()
+    
+    plt.tight_layout()
+    filename = title.replace(".",",")+ ".png"
+    plot_dir = os.path.join("./plot", attack_dir)
+    save_path = os.path.join(plot_dir, filename)
+    os.makedirs(plot_dir, exist_ok=True)
+    plt.savefig(save_path)
+    print(f"Plot {title}.png salvato.")
+    plt.close()

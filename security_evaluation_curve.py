@@ -239,8 +239,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon_values = [0, 1, 10, 100]
-    max_iter = [10]
+    epsilon_values = [0, 1e-10, 1e-8, 1e-6]
+    max_iter = [30]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -365,38 +365,3 @@ def run_cw(classifier, name, test_set, accuracy_clean, targeted=False, targeted_
         plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
     else:
         plot_accuracy(f"{name} - Accuracy vs Learning Rate and Max Perturbations (Confidence={confidence}; Max_iter={max_iter})", "Learning Rate", learning_rate_values, max_perturbations, accuracies, attack_dir)
-
-
-def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, targeted=False, targeted_accuracies=None):
-    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-    fig.suptitle(title, fontsize=16)
-    #print(x, max_perturbations, accuracies)
-    # Accuracy and Targeted Accuracy vs x
-    axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
-    if targeted:
-        axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[0].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
-    else:
-        axes[0].legend(["Accuracy"], loc="upper right")
-    axes[0].set_xlabel(x_title)
-    axes[0].grid()
-
-    # Accuracy and Targeted Accuracy vs Max Perturbations
-    axes[1].plot(max_perturbations, accuracies, marker='o', linestyle='-', color='b')
-    if targeted:
-        axes[1].plot(max_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
-        axes[1].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
-    else:
-        axes[1].legend(["Accuracy"], loc="upper right")
-    axes[1].set_xlabel("Max Perturbations")
-    axes[1].axvline(x=0.1, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
-    axes[1].grid()
-    
-    plt.tight_layout()
-    filename = title.replace(".",",")+ ".png"
-    plot_dir = os.path.join("./plot", attack_dir)
-    save_path = os.path.join(plot_dir, filename)
-    os.makedirs(plot_dir, exist_ok=True)
-    plt.savefig(save_path)
-    print(f"Plot {title}.png salvato.")
-    plt.close()

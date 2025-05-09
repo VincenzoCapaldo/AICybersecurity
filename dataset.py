@@ -5,9 +5,8 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-from facenet_pytorch import fixed_image_standardization
 
-# trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
+# Trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
 trans = transforms.Compose([
     transforms.ToTensor(),  # converte da HWC uint8 [0, 255] numpy → CHW float32 [0.0, 1.0] tensor
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # [0,1] → [-1,1] 

@@ -8,11 +8,8 @@ from tqdm import tqdm
 NUM_CLASSES = 8631
 
 class AdversarialAttack(ABC):
-    def __init__(self, classifierNN1, classifierNN2 , detectors, threshold):
+    def __init__(self, classifierNN1):
         self.classifierNN1 = classifierNN1
-        self.classifierNN2 = classifierNN2
-        self.detectors = detectors
-        self.threshold = threshold  # Soglia per i detector (default)
 
     @abstractmethod
     def generate_attack(self, images, targeted=False, target_class=0):
@@ -26,9 +23,10 @@ class AdversarialAttack(ABC):
     def generate_train_adv(self, images, values, save_dir, verbose=False):
         pass
     
+    
 class FGSM(AdversarialAttack):
-    def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
-        super().__init__(classifierNN1, classifierNN2, detectors, threshold)
+    def __init__(self, classifierNN1):
+        super().__init__(classifierNN1)
 
     def generate_attack(self, images, epsilon, targeted=False, targeted_labels=None):
         attack = FastGradientMethod(estimator=self.classifierNN1, eps=epsilon, targeted=targeted)
@@ -72,8 +70,8 @@ class FGSM(AdversarialAttack):
     
 
 class BIM(AdversarialAttack):
-    def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
-        super().__init__(classifierNN1, classifierNN2, detectors, threshold)
+    def __init__(self, classifierNN1):
+        super().__init__(classifierNN1)
 
     def generate_attack(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = BasicIterativeMethod(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
@@ -120,8 +118,8 @@ class BIM(AdversarialAttack):
     
 
 class PGD(AdversarialAttack):
-    def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
-        super().__init__(classifierNN1, classifierNN2, detectors, threshold)
+    def __init__(self, classifierNN1):
+        super().__init__(classifierNN1)
 
     def generate_attack(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
@@ -169,8 +167,8 @@ class PGD(AdversarialAttack):
 
 
 class DF(AdversarialAttack):
-    def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
-        super().__init__(classifierNN1, classifierNN2, detectors, threshold)
+    def __init__(self, classifierNN1):
+        super().__init__(classifierNN1)
 
     def generate_attack(self, images, epsilon, max_iter, verbose):
         test_images_adv = []
@@ -210,9 +208,10 @@ class DF(AdversarialAttack):
         if verbose:
             print("Training adversarial examples generated and saved successfully for df.")
 
+
 class CW(AdversarialAttack):
-    def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
-        super().__init__(classifierNN1, classifierNN2, detectors, threshold)
+    def __init__(self, classifierNN1):
+        super().__init__(classifierNN1)
 
     def generate_attack(self, images, confidence, max_iter, learning_rate, targeted=False, targeted_labels=None):
         attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, batch_size=16, targeted=targeted)
