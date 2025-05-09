@@ -11,7 +11,7 @@ NUM_CLASSES = 8631
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument("--test_classifierNN1", type=bool, default=True, help="If true test on classifierNN1, otherwise test on classifierNN2")
+    parser.add_argument("--test_classifierNN1", type=bool, default=False, help="If true test on classifierNN1, otherwise test on classifierNN2")
     #parser.add_argument("--targeted", type=bool, default=False, help="Run a targeted attack")
     args = parser.parse_args()
     

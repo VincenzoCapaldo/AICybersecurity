@@ -5,6 +5,14 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+from facenet_pytorch import fixed_image_standardization
+
+# trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
+trans = transforms.Compose([
+    np.float32,
+    transforms.ToTensor(),
+    fixed_image_standardization   
+])
 
 # processed utilizza immagini con resize + centercrop
 def get_test_set(images_dir="./dataset/test_set/clean/processed", csv_path="./dataset/test_set/test_set.csv", 
@@ -59,9 +67,7 @@ class TestSet(Dataset):
     def __getitem__(self, idx):
         img_path, label = self.samples[idx]
         image = Image.open(img_path)
-        image = np.array(image, dtype=np.float32)/255.0     # porta l'immagine nell'intervallo [0, 1]
-        image = (image * 2.0) - 1.0                         # porta l'immagine nell'intevallo [-1, 1]
-        return transforms.ToTensor()(image), label
+        return trans(image), label
 
     def get_true_label(self, name):
         return self.true_labels.get(name)
@@ -107,9 +113,7 @@ class TrainSet(Dataset):
     def __getitem__(self, idx):
         img_path = self.samples[idx]
         image = Image.open(img_path)
-        image = np.array(image, dtype=np.float32)/255.0     # porta l'immagine nell'intervallo [0, 1]
-        image = (image * 2.0) - 1.0                         # porta l'immagine nell'intevallo [-1, 1]
-        return transforms.ToTensor()(image)
+        return trans(image)
     
     def get_images(self):
         dataloader = DataLoader(self, batch_size=32, shuffle=False)
