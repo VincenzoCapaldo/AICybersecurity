@@ -16,7 +16,7 @@ def main():
     
     # Attacchi selezionato
     attacks = ["fgsm", "bim", "pgd", "df", "cw"]
-    attacks = ["bim", "pgd"]
+    attacks = ["pgd"]
     print(f"Selected attacks: {attacks}")
     
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza

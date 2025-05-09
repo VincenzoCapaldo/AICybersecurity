@@ -254,7 +254,7 @@ def get_detector(device="cpu"):
     backbone.to(device)
     detector = AdversarialDetector(backbone)
     detector.to(device)
-    print("Adversarial Detector con parte della backbone sbloccata")
+    print("Adversarial Detector con l'intera backbone sbloccata")
     return detector
 
 

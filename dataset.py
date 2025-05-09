@@ -19,7 +19,7 @@ def get_test_set(images_dir="./dataset/test_set/clean/processed", csv_path="./da
     return TestSet(images_dir, csv_path, label_map_path)
 
 
-def get_train_set(images_dir="./dataset/detectors_train_set/clean"):
+def get_train_set(images_dir="./dataset/detectors_train_set/clean/processed"):
     return TrainSet(images_dir)
 
 

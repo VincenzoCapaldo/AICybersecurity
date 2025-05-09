@@ -43,11 +43,14 @@ def main():
             detectors[attack_type] = BinaryInputDetector(detector_classifier)
             
             # Trainining set avversario
-            training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples", attack_type)
+            training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples/", attack_type)
             train_images_adv=load_images_from_npy_folder(training_set_path)
-            train_images_adv = np.array(train_images_adv).reshape(-1, 3, 224, 224)
-            print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
+            #for i in enumerate(train_images_adv):
+            #    print(f"{i}: {train_images_adv[i].shape}")
+            train_images_adv = np.concatenate(train_images_adv, axis=0)
+            #train_images_adv = np.array(train_images_adv).reshape(-1, 3, 224, 224)
             print(f"Train clean images shape: {np.shape(train_images_clean)}")
+            print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
 
             # Concatenazione delle immagini clean e avversarie
             x_train_detector = np.concatenate((train_images_clean, train_images_adv), axis=0)

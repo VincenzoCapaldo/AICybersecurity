@@ -27,12 +27,12 @@ def get_adversarial_images(images_dir, num_samples=1000):
     total_samples = imgs_adv.shape[0]
     indices = np.random.choice(total_samples, size=num_samples, replace=False)
     # Istogramma degli indici
-    plt.hist(indices, bins=50, color='blue', edgecolor='black')
-    plt.title("Distribuzione degli indici selezionati")
-    plt.xlabel("Indice")
-    plt.ylabel("Frequenza")
-    plt.grid(True)
-    plt.show()
+    #plt.hist(indices, bins=50, color='blue', edgecolor='black')
+    #plt.title("Distribuzione degli indici selezionati")
+    #plt.xlabel("Indice")
+    #plt.ylabel("Frequenza")
+    #plt.grid(True)
+    #plt.show()
     imgs_subset = imgs_adv[indices]
     return imgs_subset
 
@@ -78,9 +78,10 @@ def main():
         print(f"Detector caricato da: {model_path}")
         
         
-        if TEST == 1:
+        if TEST == 3:
             #### TEST 1 (50% clean - 50% untargeted) ####
             title = attack_type + "_ROC_untargeted"
+            title_image = attack_type + "TEST1_ROC1_untargeted"
             images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
             
@@ -88,11 +89,13 @@ def main():
         if TEST == 2:
             #### TEST 2 (50% clean - 50% targeted) ####
             title = attack_type + "_ROC_targeted"
+            title_image = attack_type + "TEST1_ROC2_targeted"
             images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
 
         if TEST == 3: 
             title = attack_type + "_ROC_targeted_untargeted"
+            title_image = attack_type + "TEST1_ROC3_targeted_untargeted"
             #### TEST 3 (50% clean - 25% untargeted - 25% targeted) ####
             images_dir1 = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
             images_dir2 = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
@@ -113,7 +116,7 @@ def main():
         final_probs.append(probs)
         f_labels.append(final_labels)
         #print(f"shape final_probs: {np.shape(final_probs)}\nshape final labels: {np.shape(f_labels)}")
-        compute_roc_curve(final_labels, probs, title, save_plot=True, show_plot=False)
+        compute_roc_curve(final_labels, probs, title, title_image, save_plot=True, show_plot=False)
         print(f"ROC curve {title} salvata")
 
 

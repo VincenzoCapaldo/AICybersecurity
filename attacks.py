@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from utils import *
+from tqdm import tqdm
 
 NUM_CLASSES = 8631
 
@@ -56,14 +57,16 @@ class FGSM(AdversarialAttack):
 
         for i, eps in enumerate(epsilon_values):
             start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-            x_subset_untargeted = images[start:(start+end)//2]
-            x_subset_targeted = images[(start+end)//2:end]
+            #x_subset_untargeted = images[start:(start+end)//2]
+            #x_subset_targeted = images[(start+end)//2:end]
+            #adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps)
+            #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+            #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+            #adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, targeted=True, targeted_labels=targeted_labels)
+            #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+            x_subset_untargeted = images[start:end]
             adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps)
             save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-            targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-            adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, targeted=True, targeted_labels=targeted_labels)
-            save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
-        
         if verbose:
             print("Training adversarial examples generated and saved successfully for fgsm.")
     
@@ -101,13 +104,16 @@ class BIM(AdversarialAttack):
 
         for i, eps in enumerate(epsilon_values):
             start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-            x_subset_untargeted = images[start:(start+end)//2]
-            x_subset_targeted = images[(start+end)//2:end]
-            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.005, max_iter=10)
+            #x_subset_untargeted = images[start:(start+end)//2]
+            #x_subset_targeted = images[(start+end)//2:end]
+            #adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+            #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+            #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+            #adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
+            #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+            x_subset_untargeted = images[start:end]
+            adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
             save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-            targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-            adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.005, max_iter=10, targeted=True, targeted_labels=targeted_labels)
-            save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for bim.")
@@ -146,13 +152,17 @@ class PGD(AdversarialAttack):
 
         for i, eps in enumerate(epsilon_values):
             start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-            x_subset_untargeted = images[start:(start+end)//2]
-            x_subset_targeted = images[(start+end)//2:end]
+            #x_subset_untargeted = images[start:(start+end)//2]
+            #x_subset_targeted = images[(start+end)//2:end]
+            #adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+            #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+            #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+            #adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
+            #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+
+            x_subset_untargeted = images[start:end]
             adv_examples_untargeted = self.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
             save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-            targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-            adv_examples_targeted = self.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
-            save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for pgd.")
@@ -162,16 +172,25 @@ class DF(AdversarialAttack):
     def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
         super().__init__(classifierNN1, classifierNN2, detectors, threshold)
 
-    def generate_attack(self, images, epsilon, max_iter):
-        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=32)
-        return attack.generate(images)
+    def generate_attack(self, images, epsilon, max_iter, verbose):
+        test_images_adv = []
+        batch_dim = 1 # Numero di immagini da processare nel batch
+        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, batch_size=1, nb_grads=5, verbose=False)
+        
+        for j in tqdm(range (0, len(images), batch_dim), desc="DeepFool"):
+            batch = images[j:j+batch_dim]  # Prendi batch_dim immagini
+            test_images_adv.append(attack.generate(batch))
+
+        # Concatenazione immagini adv
+        test_images_adv = np.concatenate(test_images_adv, axis=0)
+        return test_images_adv
 
     def generate_test_adv(self, images, epsilon_values, max_iter_values, save_dir, verbose=False):
         i=0
         for epsilon in epsilon_values:
             for max_iter in max_iter_values:
                 # Generazione delle immagini avversarie
-                test_images_adv = self.generate_attack(images, epsilon, max_iter)
+                test_images_adv = self.generate_attack(images, epsilon, max_iter, verbose)
                 save_images_as_npy(test_images_adv, f"{i}_eps_{epsilon};max_iter_{max_iter}", save_dir)
                 i+=1
 
@@ -190,7 +209,6 @@ class DF(AdversarialAttack):
         
         if verbose:
             print("Training adversarial examples generated and saved successfully for df.")
-
 
 class CW(AdversarialAttack):
     def __init__(self, classifierNN1, classifierNN2=None, detectors=None, threshold=0.5):
