@@ -8,8 +8,8 @@ from attacks import FGSM, BIM, PGD, DF, CW
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--generate_train_adv', type=bool, default=True, help='Se True, genera il train adv set; altrimenti genera il test adv set')
-    parser.add_argument("--targeted", type=bool, default=True, help="Generate targeted attacks")
+    parser.add_argument('--generate_train_adv', type=bool, default=False, help='Se True, genera il train adv set; altrimenti genera il test adv set')
+    parser.add_argument("--targeted", type=bool, default=False, help="Generate targeted attacks")
     parser.add_argument("--verbose", type=bool, default=True, help="Print detailed information during the generation of adversarial examples")
     args = parser.parse_args()
 
@@ -19,7 +19,7 @@ def main():
 
     # Attacchi selezionati
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["pgd"]
+    #attack_types = ["df"]
 
     # Generazione del training set avversario
     if args.generate_train_adv:
@@ -28,31 +28,37 @@ def main():
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = FGSM(classifier)
-                values = [0.01, 0.02, 0.03, 0.04, 0.05]
+                values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/fgsm"
             elif attack_name == "bim":
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = BIM(classifier)
-                values = [0.01, 0.02, 0.03, 0.04, 0.05]
+                values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/bim"
             elif attack_name == "pgd":
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = PGD(classifier)
-                values = [0.01, 0.02, 0.03, 0.04, 0.05]
+                values = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1]
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/pgd"
             elif attack_name == "df":
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = DF(classifier)
+
+                # DA CAMBIARE
                 values = [0.01, 0.02, 0.03, 0.04, 0.05]
+
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/df"
             elif attack_name == "cw":
                 # Inizializza il classificatore
                 classifier = setup_classifierNN1(device=device)
                 attack = CW(classifier)
+
+                # DA CAMBIARE
                 values = [0.01, 0.1, 1]
+
                 save_dir = "./dataset/detectors_train_set/adversarial_examples/cw"
             else:
                 raise ValueError(f"Unknown attack type: {attack_name}")

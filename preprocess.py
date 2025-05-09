@@ -94,7 +94,7 @@ def create_detectors_training_set(dataset_directory_origin, dataset_directory_de
 
 if __name__ == "__main__":
     # Parametri
-    random.seed(2025) # Imposta il seed per la riproducibilità
+    random.seed(33) # Imposta il seed per la riproducibilità
     Train_set = False # True se si vuole creare il training set, False se si vuole creare il test set
     if (Train_set):
         number_img_train = 1000 # Numero di immagini totale del training set
@@ -108,5 +108,5 @@ if __name__ == "__main__":
         dataset_directory_destination = './dataset/test_set/clean/original' # Directory in cui salvare le immagini selezionate
         dataset_directory_processed = './dataset/test_set/clean/processed' # Directory in cui salvare le immagini proccessate
         number_img_test = 10 # Numero massimo di immagini da copiare per ciascun ID (10 per 100 persone = 1000 img)
-        #create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img_test)
+        create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img_test)
         process_test_set(dataset_directory_destination, dataset_directory_processed)

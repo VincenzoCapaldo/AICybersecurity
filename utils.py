@@ -90,8 +90,7 @@ def process_images(images):
     mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1, 1)
     
     for image in images:
-        image = (image * 128.0) + 127.5
-        #image = (image + 1.0)  * (255.0 / 2)  # resta float32
+        image = (image + 1.0)  * (255.0 / 2)  # resta float32
         image = image[[2, 1, 0], :, :]  # RGB → BGR
         image -= mean_bgr  # normalizzazione
         processed_images.append(image)
