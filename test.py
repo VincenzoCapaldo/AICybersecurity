@@ -14,7 +14,8 @@ def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
     parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
     parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
-    parser.add_argument('--generate_test_set_adv', type=bool, default=False, help='True to generate test set adv')
+    parser.add_argument("--verbose", type=bool, default=True, help="Print detailed information during the generation of adversarial examples")
+    parser.add_argument('--generate_test_set_adv', type=bool, default=True, help='True to generate test set adv')
     args = parser.parse_args()
     
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -23,7 +24,7 @@ def main():
 
     # Attacchi selezionati 
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["df"]
+    attack_types = ["fgsm", "bim"]
     print(f"Selected attacks: {attack_types}")
 
     # Test set clean
