@@ -111,14 +111,17 @@ def process_images(images):
     return np.stack(processed_images, axis=0)
 
 
-def show_image(image):
-    # Trasponiamo da (C, W, H) a (W, H, C) per matplotlib
-    image = np.transpose(image, (1, 2, 0))
+def show_image(img, title=""):
+    img = (img + 1) / 2.0  # normalizza da [-1, 1] a [0, 1]
+    img = np.transpose(img, (1, 2, 0))  # da (C, H, W) a (H, W, C)
 
-    # Mostriamo l'immagine
-    plt.imshow(image)
-    plt.axis('off')  # per togliere gli assi
-    plt.show()
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    ax.set_title(title)
+    ax.axis('off')
+
+    # Mostra la finestra e aspetta che venga chiusa
+    plt.show(block=True)
 
 
 def save_images_as_jpg(images, filename, save_dir):
@@ -213,3 +216,16 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, attack_dir, 
     plt.savefig(save_path)
     print(f"Plot {title}.png salvato.")
     plt.close()
+
+
+def show_images_from_npy_folder(folder_path):
+    images = load_images_from_npy_folder(folder_path)
+
+    image_set = images[0]  # shape: (1000, 3, 224, 224)
+
+    for i, img in enumerate(image_set):
+        show_image(img, f'Immagine {i+1}/{len(image_set)}')
+    
+
+if __name__ == "__main__":
+    show_images_from_npy_folder("./dataset/test_set/adversarial_examples/df/plot1")
