@@ -11,7 +11,8 @@ from utils import *
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument('--generate_train_set_adv', type=bool, default=False, help='True to generate train set adv')
+    parser.add_argument('--generate_train_set_adv', type=bool, default=True, help='True to generate train set adv')
+    parser.add_argument('--verbose', type=bool, default=True, help='True to generate train set adv')
     args = parser.parse_args()
 
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
@@ -30,7 +31,7 @@ def main():
     nb_train = train_images_clean.shape[0]
 
     # GENERAZIONE TRAIN SET ADV
-    if args.generate_test_set_adv:
+    if args.generate_train_set_adv:
         generate_train_adv(setup_classifierNN1(device), train_images_clean, attack_types, verbose=args.verbose)
 
     #### FASE DI TRAINING ####
