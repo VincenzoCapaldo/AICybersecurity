@@ -57,7 +57,12 @@ def main():
     detectors = {}
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+<<<<<<< HEAD
     attack_types = ["fgsm", "bim", "pgd"]    
+=======
+    attack_types = ["pgd"]
+    
+>>>>>>> 002bdd5840df1844fbf8c142990933a1f896e4e1
 
     # Carica le immagini e le etichette del test set
     test_set = get_test_set()
@@ -75,13 +80,18 @@ def main():
         detector_classifier.model.eval()
         detectors[attack_type] = BinaryInputDetector(detector_classifier)
         print(f"Detector caricato da: {model_path}")
-        
+        images_dir = "./dataset/test_set/adversarial_examples/" + attack_type
         
         if ROC == 1:
             #### TEST 1 (50% clean - 50% untargeted) ####
             title = attack_type + " ROC untargeted"
             title_image = f"{attack_type}_TEST{TEST}_ROC1_untargeted"
-            images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
+            if attack_type == "fgsm":
+                images_dir = images_dir + "/untargeted"
+            elif attack_type == "df":
+                images_dir = images_dir
+            else:
+                images_dir = images_dir + "/untargeted/plot1"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
             
             
@@ -89,15 +99,27 @@ def main():
             #### TEST 2 (50% clean - 50% targeted) ####
             title = attack_type + " ROC targeted"
             title_image = f"{attack_type}_TEST{TEST}_ROC2_targeted"
-            images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
+            if attack_type == "fgsm":
+                images_dir = images_dir + "/targeted"
+            elif attack_type == "df":
+                images_dir = images_dir
+            else:
+                images_dir = images_dir + "/targeted/plot1"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
 
         if ROC == 3: 
             title = attack_type + " ROC targeted untargeted"
             title_image = f"{attack_type}_TEST{TEST}_ROC3_targeted_untargeted"
             #### ROC 3 (50% clean - 25% untargeted - 25% targeted) ####
-            images_dir1 = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
-            images_dir2 = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
+            if attack_type == "fgsm":
+                images_dir1 = images_dir + "/untargeted"
+                images_dir2 = images_dir + "/targeted"
+            elif attack_type == "df":
+                print("ROC 3 non disponibile per DeepFool")
+                return
+            else:
+                images_dir1 = images_dir + "/untargeted/plot1"
+                images_dir2 = images_dir + "/targeted/plot1"
             imgs_adv1 = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL//2)
             imgs_adv2 = get_adversarial_images(images_dir2, NUM_SAMPLES_ADVERSARIAL//2)
             imgs_adv = np.concatenate((imgs_adv1, imgs_adv2), axis=0)
