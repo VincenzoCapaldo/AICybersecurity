@@ -57,9 +57,7 @@ def main():
     detectors = {}
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim", "pgd"]
-    attack_types = ["pgd"]
-    
+    attack_types = ["fgsm", "bim", "pgd"]    
 
     # Carica le immagini e le etichette del test set
     test_set = get_test_set()

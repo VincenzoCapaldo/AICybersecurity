@@ -21,10 +21,10 @@ def main():
 
     # Directory per i modelli
     os.makedirs("./models", exist_ok=True)
-
+    
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["pgd"]
+    attack_types = ["fgsm", "bim"]
 
     # Training set di partenza, con immagini clean
     train_images_clean = get_train_set().get_images()
