@@ -47,11 +47,12 @@ def main():
     # Directory per i modelli
     os.makedirs("./models", exist_ok=True)
 
-    #setta il seed per ripetere gli esperimenti
+    #imposta il seed per ripetere gli esperimenti
     np.random.seed(2025)
     NUM_SAMPLES_ADVERSARIAL = 1000  # numero di campioni da inserire nel test adversarial (dato che i dati clean sono 1000, usiamo 1000 campioni
                         # adversarial per avere un test bilanciato)        
-    TEST = 3
+    ROC = 3
+    TEST = 1    # serve solo per il titolo dell'immagine
     # Train or load Detectors
     detectors = {}
     # indica i detector da addestrare o caricare
@@ -78,25 +79,25 @@ def main():
         print(f"Detector caricato da: {model_path}")
         
         
-        if TEST == 3:
+        if ROC == 1:
             #### TEST 1 (50% clean - 50% untargeted) ####
-            title = attack_type + "_ROC_untargeted"
-            title_image = attack_type + "TEST1_ROC1_untargeted"
+            title = attack_type + " ROC untargeted"
+            title_image = f"{attack_type}_TEST{TEST}_ROC1_untargeted"
             images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
             
             
-        if TEST == 2:
+        if ROC == 2:
             #### TEST 2 (50% clean - 50% targeted) ####
-            title = attack_type + "_ROC_targeted"
-            title_image = attack_type + "TEST1_ROC2_targeted"
+            title = attack_type + " ROC targeted"
+            title_image = f"{attack_type}_TEST{TEST}_ROC2_targeted"
             images_dir = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
             imgs_adv = get_adversarial_images(images_dir, NUM_SAMPLES_ADVERSARIAL)
 
-        if TEST == 3: 
-            title = attack_type + "_ROC_targeted_untargeted"
-            title_image = attack_type + "TEST1_ROC3_targeted_untargeted"
-            #### TEST 3 (50% clean - 25% untargeted - 25% targeted) ####
+        if ROC == 3: 
+            title = attack_type + " ROC targeted untargeted"
+            title_image = f"{attack_type}_TEST{TEST}_ROC3_targeted_untargeted"
+            #### ROC 3 (50% clean - 25% untargeted - 25% targeted) ####
             images_dir1 = "./dataset/test_set/adversarial_examples/" + attack_type + "/untargeted"
             images_dir2 = "./dataset/test_set/adversarial_examples/" + attack_type + "/targeted"
             imgs_adv1 = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL//2)
