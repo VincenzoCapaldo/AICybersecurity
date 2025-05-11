@@ -77,7 +77,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     
     # Campioni accettati = quelli che passeranno al classificatore
     x_pass = x_test[accepted_mask]
-    y_pass = y_test[accepted_mask]
+    y_pass = y_test[accepted_mask].cpu().numpy()
 
     # Predizioni del classificatore
     if x_pass.shape[0] > 0:

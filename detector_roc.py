@@ -57,7 +57,7 @@ def main():
     detectors = {}
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["pgd"]
+    attack_types = ["fgsm", "bim", "pgd"]
     
 
     # Carica le immagini e le etichette del test set
@@ -129,10 +129,8 @@ def main():
         logits = np.array(report["predictions"])  # shape (n_samples, 2)
         probs = softmax(logits, axis=1)
         probs = probs[:, 1]
-        #print(f"Final test shape: {final_test.shape}, final labels shape: {final_labels.shape}, probs shape: {probs.shape}")
         final_probs.append(probs)
         f_labels.append(final_labels)
-        #print(f"shape final_probs: {np.shape(final_probs)}\nshape final labels: {np.shape(f_labels)}")
         compute_roc_curve(final_labels, probs, title, title_image, save_plot=True, show_plot=False)
         print(f"ROC curve {title} salvata")
 
