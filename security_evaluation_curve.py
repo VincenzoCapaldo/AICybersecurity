@@ -92,16 +92,18 @@ def run_bim(classifier, name, test_set, accuracy_clean, targeted=False, targeted
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy(classifier, img_adv, targeted_labels))
         else:
+            """ PLOT 2 non supportato per detectors
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
             if targeted:
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, targeted_labels, adv_labels, detectors, threshold, targeted=True)[0])
-    if targeted:
-        plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
-    else:
-        plot_accuracy(f"{name} - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir)
-    
+        """
+        if targeted:
+            plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
+        else:
+            plot_accuracy(f"{name} - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir)
+        
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + attack_dir + "/plot3"
     imgs_adv = load_images_from_npy_folder(load_dir)
@@ -122,16 +124,18 @@ def run_bim(classifier, name, test_set, accuracy_clean, targeted=False, targeted
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy(classifier, img_adv, targeted_labels))
         else:
+            """
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
             if targeted:
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, targeted_labels, adv_labels, detectors, threshold, targeted=True)[0])
-    if targeted:
-        plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
-    else:
-        plot_accuracy(f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir)
-    
+        """
+        if targeted:
+            plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
+        else:
+            plot_accuracy(f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir)
+        
 
 def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted_accuracy_clean=0.0, target_class=0, detectors=None, threshold=0.05):
     images_dir = "./dataset/test_set/adversarial_examples/"
@@ -188,16 +192,18 @@ def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy(classifier, img_adv, targeted_labels))
         else:
+            """
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
             if targeted:
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, targeted_labels, adv_labels, detectors, threshold, targeted=True)[0])
-    if targeted:
-        plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
-    else:
-        plot_accuracy(f"{name} - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir)
-    
+        """
+        if targeted:
+            plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
+        else:
+            plot_accuracy(f"{name} - Accuracy vs Epsilon Step and Max Perturbations (Epsilon={epsilon}; Max_iter={max_iter})", "Epsilon Step", epsilon_step_values, max_perturbations, accuracies, attack_dir)
+        
     # Calcolo dell'accuracy al variare di max_iter e della perturbazione massima (con epsilon e epsilon_step fissati)
     load_dir = images_dir + attack_dir + "/plot3"
     imgs_adv = load_images_from_npy_folder(load_dir)
@@ -218,16 +224,18 @@ def run_pgd(classifier, name, test_set, accuracy_clean, targeted=False, targeted
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy(classifier, img_adv, targeted_labels))
         else:
+            """
             adv_labels = np.ones(len(img_adv), dtype=bool) # label associate a immagini avversarie (classe 1)
             accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, clean_labels, adv_labels, detectors, threshold, targeted=False)[0])
             if targeted:
                 targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
                 targeted_accuracies.append(compute_accuracy_with_detectors(classifier, img_adv, targeted_labels, adv_labels, detectors, threshold, targeted=True)[0])
-    if targeted:
-        plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
-    else:
-        plot_accuracy(f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir)
-    
+        """
+        if targeted:
+            plot_accuracy(f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir, targeted, targeted_accuracies)
+        else:
+            plot_accuracy(f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon={epsilon}; (Epsilon_step={epsilon_step})", "Max Iterations", max_iter_values, max_perturbations, accuracies, attack_dir)
+        
 
 def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold=0.05):
     images_dir = "./dataset/test_set/adversarial_examples/"
