@@ -247,8 +247,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon_values = [0, 1e-10, 1e-8, 1e-6]
-    max_iter = [30]
+    epsilon_values = [0, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1]
+    max_iter = [10]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
@@ -265,8 +265,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, threshold
     imgs_adv = load_images_from_npy_folder(load_dir)
     max_perturbations = [0.0]
     accuracies = [accuracy_clean]
-    epsilon = [1]
-    max_iter_values = [0, 1, 5, 10]
+    epsilon = [1e-2]
+    max_iter_values = [0, 1, 5, 10, 20, 50]
     for img_adv in imgs_adv:
         max_perturbations.append(compute_max_perturbation(clean_images, img_adv))
         if name == "NN2":
