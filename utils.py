@@ -25,7 +25,7 @@ def compute_accuracy(classifier, x_test, y_test):
     return accuracy
 
 
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=False):
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=True):
     """
     Calcola l'accuracy penalizzando i falsi positivi dei detector.
     - classifier: il classificatore (con metodo predict).

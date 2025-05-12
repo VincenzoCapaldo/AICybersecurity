@@ -99,13 +99,13 @@ def generate_test_adv(classifier, test_images, attack_types, targeted=False, tar
             attack = DF(classifier)
             
             ## PLOT 1 - epsilon variabile ##
-            epsilon_values = [1e-10, 1e-8, 1e-6]
-            max_iter_values = [30]
+            epsilon_values = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1]
+            max_iter_values = [10]
             attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot1", verbose=verbose)
 
             ## PLOT 2 - max_iter variabile ## 
-            epsilon_values = [10]
-            max_iter_values = [1, 5, 10]
+            epsilon_values = [1e-2]
+            max_iter_values = [1, 5, 10, 20, 50]
             attack.generate_test_adv(test_images, epsilon_values, max_iter_values, save_dir + "/plot2", verbose=verbose)
 
         elif attack_name == "cw":
