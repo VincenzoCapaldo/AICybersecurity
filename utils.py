@@ -9,7 +9,41 @@ from art.defences.detector.evasion import BinaryInputDetector
 import torch
 
 
-def compute_max_perturbation(test_images, test_images_adv):
+def compute_max_perturbation(test_images, test_images_adv, show=False):
+    show_distribution = False
+    if show_distribution:
+        max_pert_sample = np.max(np.abs(test_images_adv - test_images), axis=(1, 2, 3))
+        
+        plt.figure(figsize=(6, 4))
+        plt.hist(max_pert_sample, bins=50, color='blue', alpha=0.7)
+        plt.title('Distribuzione delle max perturbations')
+        plt.xlabel('Max perturbation')
+        plt.ylabel('Frequenza')
+        plt.grid(True)
+        plt.show()
+        
+    if show:
+        print(f"clean test images shape: {test_images.shape} \tadversarial test images shape: {test_images_adv.shape}")
+        for i in range(1000):
+            max_pert = np.max(np.abs(test_images_adv[i] - test_images[i]))
+            test_image = (test_images[i] + 1)/2.0
+            test_image_adv = (test_images_adv[i] + 1)/2.0
+
+            if max_pert > 0.5:
+                fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+                fig.suptitle(f'{i} Max perturbation: {max_pert:.4f}', fontsize=12)
+
+                axes[0].imshow(np.transpose(test_image, (1, 2, 0)))
+                axes[0].set_title('Original')
+                axes[0].axis('off')
+
+                axes[1].imshow(np.transpose(test_image_adv, (1, 2, 0)))
+                axes[1].set_title('Adversarial')
+                axes[1].axis('off')
+
+                plt.tight_layout()
+                plt.subplots_adjust(top=0.85)  # per non sovrapporre il titolo con i subplot
+                plt.show()
     return np.max(np.abs(test_images_adv - test_images))
 
 
