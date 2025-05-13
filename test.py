@@ -1,6 +1,5 @@
 import argparse
 import torch
-from generate_adv_example import generate_test_adv
 from nets import setup_classifierNN1, setup_classifierNN2
 from dataset import get_test_set
 from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
@@ -99,3 +98,6 @@ def main():
 if __name__ == "__main__":
     main()
 """
+
+# questo si puo levare, bisogna solo mettere da una parte il calcolo delle performance clean, lo possiamo fare o direttamente nelle
+# security evaluation curve o nel file dove creaiamo e il test set
