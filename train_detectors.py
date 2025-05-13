@@ -1,7 +1,7 @@
 import argparse
 import numpy as np
 import os
-from generate_adv_example import generate_train_adv
+from detector_training_set import generate_train_adv
 from nets import setup_classifierNN1, setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
 import torch
