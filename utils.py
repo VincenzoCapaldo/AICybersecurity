@@ -191,32 +191,6 @@ def load_images_from_npy_folder(folder_path):
 
     return images_list
 
-
-def compute_roc_curve(true_label, model_predictions, title="Roc curve", title_image="roc", save_plot=False, show_plot=False):
-    # Calcolo dei valori ROC
-    save_dir = "detectors_plot/"
-    os.makedirs(save_dir, exist_ok=True)
-    fpr, tpr, thresholds = roc_curve(true_label, model_predictions)
-    roc_auc = auc(fpr, tpr)
-
-    plt.figure()
-    plt.plot(fpr, tpr, color='darkorange', lw=2, label=f' ROC Curve (area = {roc_auc:.2f})')
-    # commentare la riga sottostante se si vuole eliminare la linea (diagonale) del detector completamente casuale
-    plt.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title(title)
-    plt.legend(loc='lower right')
-    plt.grid()
-    # roc curve plot
-    if show_plot:
-        plt.show()
-    if save_plot:
-        plt.savefig(save_dir + title_image + ".png")
-
-
 def show_images_from_npy_folder(folder_path):
     images = load_images_from_npy_folder(folder_path)
 
