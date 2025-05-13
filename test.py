@@ -8,8 +8,7 @@ from utils import *
 
 
 NUM_CLASSES = 8631
-
-
+"""
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
     parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
@@ -99,3 +98,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""

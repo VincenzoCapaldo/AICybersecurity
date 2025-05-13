@@ -24,7 +24,7 @@ def main():
     
     # indica i detector da addestrare o caricare
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim"]
+    attack_types = ["pgd"]
 
     # Training set di partenza, con immagini clean
     train_images_clean = get_train_set().get_images()
