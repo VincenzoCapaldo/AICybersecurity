@@ -11,7 +11,7 @@ from utils import *
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument('--generate_train_set_adv', type=bool, default=True, help='True to generate train set adv')
+    parser.add_argument('--generate_train_set_adv', type=bool, default=False, help='True to generate train set adv')
     parser.add_argument('--verbose', type=bool, default=True, help='True to generate train set adv')
     args = parser.parse_args()
 
@@ -46,10 +46,7 @@ def main():
         # Trainining set avversario
         training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples/", attack_type)
         train_images_adv=load_images_from_npy_folder(training_set_path)
-        #for i in enumerate(train_images_adv):
-        #    print(f"{i}: {train_images_adv[i].shape}")
         train_images_adv = np.concatenate(train_images_adv, axis=0)
-        #train_images_adv = np.array(train_images_adv).reshape(-1, 3, 224, 224)
         print(f"Train clean images shape: {np.shape(train_images_clean)}")
         print(f"Train images adversarial shape: {np.shape(train_images_adv)}")
 
