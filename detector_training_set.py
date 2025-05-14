@@ -4,12 +4,18 @@ import random
 import shutil
 import numpy as np
 from PIL import Image
-import torch
 from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
 from attacks import BIM, CW, DF, FGSM, PGD
 from utils import save_images_as_npy
 
 NUM_CLASSES = 8631
+
+# Trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
+trans = transforms.Compose([
+    transforms.ToTensor(),  # converte da HWC uint8 [0, 255] numpy → CHW float32 [0.0, 1.0] tensor
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # [0,1] → [-1,1] 
+])
 
 def get_train_set(images_dir="./dataset/detectors_train_set/clean/processed"):
     return TrainSet(images_dir)
