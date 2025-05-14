@@ -110,7 +110,7 @@ def generate_train_clean(dataset_directory_origin, dataset_directory_destination
         shutil.copy(image_path, destination_path)
 
 # Generazione del train set avversario per i detectors
-def generate_train_adv(classifier, images, attack_types):
+def generate_train_adv(classifier, images, attack_types, with_targeted=False):
     for attack_name in attack_types:
         
         if attack_name == "fgsm":
@@ -121,16 +121,20 @@ def generate_train_adv(classifier, images, attack_types):
             split_size = n_samples // len(epsilon_values)
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-                #x_subset_untargeted = images[start:(start+end)//2]
-                #x_subset_targeted = images[(start+end)//2:end]
-                #adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps)
-                #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-                #targeted_labels = attack.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-                #adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, targeted=True, targeted_labels=targeted_labels)
-                #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
-                x_subset_untargeted = images[start:end]
-                adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps)
-                save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                # Generazione campioni 50% targeted 50% untargeted
+                if with_targeted:
+                    x_subset_untargeted = images[start:(start+end)//2]
+                    x_subset_targeted = images[(start+end)//2:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                    targeted_labels = attack.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+                    adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, targeted=True, targeted_labels=targeted_labels)
+                    save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+                # Generazione campioni 100% untargeted
+                else:
+                    x_subset_untargeted = images[start:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for fgsm.")
         
         if attack_name == "bim":
@@ -141,16 +145,20 @@ def generate_train_adv(classifier, images, attack_types):
             split_size = n_samples // len(epsilon_values)
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-                #x_subset_untargeted = images[start:(start+end)//2]
-                #x_subset_targeted = images[(start+end)//2:end]
-                #adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
-                #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-                #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-                #adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
-                #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
-                x_subset_untargeted = images[start:end]
-                adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
-                save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                # Generazione campioni 50% targeted 50% untargeted
+                if with_targeted:
+                    x_subset_untargeted = images[start:(start+end)//2]
+                    x_subset_targeted = images[(start+end)//2:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                    targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+                    adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
+                    save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+                # Generazione campioni 100% untargeted
+                else:
+                    x_subset_untargeted = images[start:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for bim.")
         
         if attack_name == "pgd":
@@ -161,16 +169,20 @@ def generate_train_adv(classifier, images, attack_types):
             split_size = n_samples // len(epsilon_values)
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
-                #x_subset_untargeted = images[start:(start+end)//2]
-                #x_subset_targeted = images[(start+end)//2:end]
-                #adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
-                #save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
-                #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-                #adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
-                #save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
-                x_subset_untargeted = images[start:end]
-                adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
-                save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                # Generazione campioni 50% targeted 50% untargeted
+                if with_targeted:
+                    x_subset_untargeted = images[start:(start+end)//2]
+                    x_subset_targeted = images[(start+end)//2:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                    targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+                    adv_examples_targeted = attack.generate_attack(x_subset_targeted, eps, epsilon_step=0.01, max_iter=10, targeted=True, targeted_labels=targeted_labels)
+                    save_images_as_npy(adv_examples_targeted, f"targeted_eps_{eps}", save_dir)
+                # Generazione campioni 100% untargeted
+                else:
+                    x_subset_untargeted = images[start:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, eps, epsilon_step=0.01, max_iter=10)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for pgd.")
 
         if attack_name == "df":
@@ -194,16 +206,20 @@ def generate_train_adv(classifier, images, attack_types):
             split_size = n_samples // len(confidence_values)
             for i, conf in enumerate(confidence_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(confidence_values)-1 else n_samples
-                #x_subset_untargeted = images[start:(start+end)//2]
-                #x_subset_targeted = images[(start+end)//2:end]
-                #adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=3)
-                #save_images_as_npy(adv_examples_untargeted, f"untargeted_conf_{conf}", save_dir)
-                #targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
-                #adv_examples_targeted = attack.generate_attack(x_subset_targeted, conf, learning_rate=0.01, max_iter=3, targeted=True, targeted_labels=targeted_labels)
-                #save_images_as_npy(adv_examples_targeted, f"targeted_conf_{conf}", save_dir)
-                x_subset_untargeted = images[start:end]
-                adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=3)
-                save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
+                # Generazione campioni 50% targeted 50% untargeted
+                if with_targeted:
+                    x_subset_untargeted = images[start:(start+end)//2]
+                    x_subset_targeted = images[(start+end)//2:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=3)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_conf_{conf}", save_dir)
+                    targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(len(x_subset_targeted),))
+                    adv_examples_targeted = attack.generate_attack(x_subset_targeted, conf, learning_rate=0.01, max_iter=3, targeted=True, targeted_labels=targeted_labels)
+                    save_images_as_npy(adv_examples_targeted, f"targeted_conf_{conf}", save_dir)
+                # Generazione campioni 100% untargeted
+                else:
+                    x_subset_untargeted = images[start:end]
+                    adv_examples_untargeted = attack.generate_attack(x_subset_untargeted, conf, learning_rate=0.01, max_iter=3)
+                    save_images_as_npy(adv_examples_untargeted, f"untargeted_eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for cw.")
 
 if __name__ == "__main__":
