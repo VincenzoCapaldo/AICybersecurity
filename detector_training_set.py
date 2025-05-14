@@ -208,12 +208,11 @@ def generate_train_adv(classifier, images, attack_types):
 
 if __name__ == "__main__":
     random.seed(33) # Imposta il seed per la riproducibilità
-    number_img_train = DIM_TRAIN # Numero di immagini totale del training set
     dataset_directory_origin = './dataset/vggface2_train/train' # Directory di origine contenente le sottocartelle per ogni ID persona con le immagini
     dataset_directory_destination = './dataset/detectors_train_set/clean/original' # Directory in cui salvare le immagini selezionate
     dataset_directory_processed = './dataset/detectors_train_set/clean/processed' # Directory in cui salvare le immagini proccessate
     os.makedirs(dataset_directory_destination, exist_ok=True)
-    generate_train_clean(dataset_directory_origin, dataset_directory_destination, number_img_train)
+    generate_train_clean(dataset_directory_origin, dataset_directory_destination, DIM_TRAIN)
     process_dataset(dataset_directory_destination, dataset_directory_processed)
     
     # Generazione dati adv
@@ -221,5 +220,4 @@ if __name__ == "__main__":
     attack_types = ["fgsm", "bim", "pgd"]
     train_images_clean = get_train_set().get_images() 
     generate_train_adv(setup_classifierNN1(device), train_images_clean, attack_types)
-    # bisogna aggiungere la chiamata a generate_train_adv(classifier, images, attack_types)
     

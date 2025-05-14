@@ -8,6 +8,7 @@ from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
 from torch.utils.data import DataLoader, TensorDataset, random_split
+from tqdm import tqdm
 
 NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
 
@@ -233,8 +234,8 @@ class AdversarialDetector(nn.Module):
         feats = feats.view(feats.size(0), -1)
         return self.classifier(feats)
     
-    def fit(self, x_train, y_train, nb_epochs=20, batch_size=16, verbose=True,
-        lr=1e-4, device='cpu', model_path="./models/detector.pth", patience=3):
+    def fit(self, x_train, y_train, nb_epochs=40, batch_size=16, verbose=True,
+        lr=1e-4, device='cpu', patience=5):
     
         self.to(device)
 
@@ -255,7 +256,7 @@ class AdversarialDetector(nn.Module):
         epochs_no_improve = 0
         best_model_state = None
 
-        for epoch in range(nb_epochs):
+        for epoch in tqdm(range(nb_epochs), desc="Epochs"):
             self.train()
             running_loss = 0.0
 
@@ -310,42 +311,29 @@ class AdversarialDetector(nn.Module):
         if best_model_state is not None:
             self.load_state_dict(best_model_state)
 
-        # Salvataggio dello state_dict del modello
-        os.makedirs(os.path.dirname(model_path), exist_ok=True)
-        torch.save(self.state_dict(), model_path)
-        print(f"Detector salvato in: {model_path}")
 
+def get_detector(device="cpu", finetune=False):
 
-def get_detector(device="cpu"):
-    # questo è per il fine tuning della rete
-    #backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
-
-    # per addestrare la rete da zero
-    backbone = InceptionResnetV1(classify=False)
+    if finetune:
+        # Finetuning della rete
+        backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
+    else:
+        # Addestra la rete da zero
+        backbone = InceptionResnetV1(classify=False)
     
     # Sblocca tutta la backbone
     for param in backbone.parameters():
         param.requires_grad = True
     
-    # fine tuning solo sull'ultimo layer della backbone (lo usiamo solo per la relazione)
-    '''
-    # Sblocca solo gli ultimi blocchi (esempio: block8)
-    for name, param in backbone.named_parameters():
-        if "block8" in name:
-            param.requires_grad = True
-    '''
-    backbone.to(device)
     detector = AdversarialDetector(backbone)
     detector.to(device)
-    print("Adversarial Detector con l'intera backbone sbloccata")
     return detector
 
 
 def setup_classifierNN1(device, classify=True):
     # Istanzio la rete
     nn1 = get_NN1(device, classify)
-
-    # Definizione dei classificatori
+    # Definizione del classificatore
     classifierNN1 = PyTorchClassifier(
         model=nn1,
         loss=torch.nn.CrossEntropyLoss(),
@@ -378,19 +366,15 @@ def setup_classifierNN2(device):
 def setup_detector_classifier(device):
     # Istanzio la rete
     detector = get_detector(device)
-
-    # Definizione dei classificatori
+    # Definizione del classificatore
     classifier = PyTorchClassifier(
         model=detector,
         loss=torch.nn.CrossEntropyLoss(),
-        optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, detector.parameters()), 
-        lr=1e-3
-        ),
+        optimizer = torch.optim.Adam(detector.parameters(), lr=1e-4),
         input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=2,
-        clip_values=(-0.5, 0.5),
+        clip_values=(-1.0, 1.0),
         device_type="gpu" if torch.cuda.is_available() else "cpu"
     )
     return classifier

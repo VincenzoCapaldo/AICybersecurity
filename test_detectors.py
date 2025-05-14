@@ -77,9 +77,9 @@ def main():
 
     #imposta il seed per ripetere gli esperimenti
     np.random.seed(2025)
-    NUM_SAMPLES_ADVERSARIAL = 1000  # numero di campioni da inserire nel test adversarial (dato che i dati clean sono 1000, usiamo 1000 campioni
+    NUM_SAMPLES_ADVERSARIAL = 1000  # numero di campioni da inserire nel test adversarial (dato che i dati clean sono 1000, usiamo 1000 campioni)
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim"]    
+    attack_types = ["fgsm", "bim", "pgd"]    
 
     # Load Detectors
     detectors = load_detectors(attack_types, device)
