@@ -31,7 +31,7 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, security_eva
     
     plt.tight_layout()
     filename = title.replace(".",",")+ ".png"
-    plot_dir = os.path.join("./plot", security_evaluation_curve_dir)
+    plot_dir = os.path.join("./plots", security_evaluation_curve_dir)
     save_path = os.path.join(plot_dir, filename)
     os.makedirs(plot_dir, exist_ok=True)
     plt.savefig(save_path)
@@ -41,7 +41,7 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, security_eva
 
 def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
     
-    attack_dir = "fgsm/targeted/plot" if targeted else "fgsm/untargeted/plot"
+    attack_dir = "fgsm/targeted/" if targeted else "fgsm/untargeted/"
     test_set_adv_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     security_evaluation_curve_dir = "./security_evaluation_curve/" + attack_dir
 
@@ -59,9 +59,10 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
             save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon}", test_set_adv_dir)
             i+=1
         print("Test adversarial examples generated and saved successfully for fgsm.")
-    else:
-        imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-        clean_images, clean_labels = test_set.get_images()
+    
+    # Caricamento delle immagini adv
+    imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+    clean_images, clean_labels = test_set.get_images()
     
     epsilon_values.insert(0, 0.0) # aggiunge 0.00 in posizione 0
     max_perturbations = [0.0]
@@ -142,9 +143,10 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};eps_step_{epsilon_step};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for bim.")
-        else:
-            imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-            clean_images, clean_labels = test_set.get_images()
+        
+        # Caricamento delle immagini adv
+        imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = plot_data["epsilon_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
@@ -229,9 +231,10 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};eps_step_{epsilon_step};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for pgd.")
-        else:
-            imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-            clean_images, clean_labels = test_set.get_images()
+        
+        # Caricamento delle immagini adv
+        imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = plot_data["epsilon_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
@@ -265,7 +268,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
 def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_samples=False):
    
-    attack_dir = "df/targeted"
+    attack_dir = "df/untargeted"
     test_set_adv_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     security_evaluation_curve_dir = "./security_evaluation_curve/" + attack_dir
 
@@ -310,9 +313,10 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};nb_grads_{nb_grads};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for df.")
-        else:
-            imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-            clean_images, clean_labels = test_set.get_images()
+        
+        # Caricamento delle immagini adv
+        imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = plot_data["epsilon_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
@@ -389,9 +393,10 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
                         save_images_as_npy(imgs_adv, f"{i}_confidence_{confidence};learning_rate_{learning_rate};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for cw.")
-        else:
-            imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-            clean_images, clean_labels = test_set.get_images()
+        
+        # Caricamento delle immagini adv
+        imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = plot_data["confidence_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0

@@ -91,6 +91,9 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     x_pass = x_test[accepted_mask]
     y_pass = y_test[accepted_mask]
 
+    if isinstance(y_pass, torch.Tensor):
+        y_pass = y_pass.cpu().numpy()
+
     # Predizioni del classificatore
     if x_pass.shape[0] > 0:
         y_pred = classifier.predict(x_pass)
