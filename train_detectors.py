@@ -1,8 +1,6 @@
-import argparse
 import numpy as np
 import os
-from detector_training_set import generate_train_adv
-from nets import get_detector, setup_classifierNN1, setup_detector_classifier
+from nets import get_detector, setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
 import torch
 from detector_training_set import get_train_set
@@ -10,11 +8,6 @@ from utils import *
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument('--generate_train_set_adv', type=bool, default=False, help='True to generate train set adv')
-    parser.add_argument('--verbose', type=bool, default=True, help='True to generate train set adv')
-    args = parser.parse_args()
-
     # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -29,10 +22,6 @@ def main():
     # Training set di partenza, con immagini clean
     train_images_clean = get_train_set().get_images()
     nb_train = train_images_clean.shape[0]
-
-    # GENERAZIONE TRAIN SET ADV
-    if args.generate_train_set_adv:
-        generate_train_adv(setup_classifierNN1(device), train_images_clean, attack_types, verbose=args.verbose)
 
     #### FASE DI TRAINING ####
     detectors = {}
@@ -89,7 +78,7 @@ def main():
             x_train_tensor = torch.tensor(x_train_detector, dtype=torch.float32)
             y_train_tensor = torch.tensor(np.argmax(y_train_detector, axis=1), dtype=torch.long)
             # Train and save
-            detector.fit(x_train_tensor, y_train_tensor, nb_epochs=20, batch_size=16, verbose=True, model_path=model_path, device=device)
+            detector.fit(x_train_tensor, y_train_tensor, nb_epochs=40, batch_size=16, verbose=True, model_path=model_path, device=device, patience=5)
 
 
 if __name__ == "__main__":

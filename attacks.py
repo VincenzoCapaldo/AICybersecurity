@@ -14,14 +14,6 @@ class AdversarialAttack(ABC):
     @abstractmethod
     def generate_attack(self, images, targeted=False, target_class=0):
         pass
-
-    @abstractmethod
-    def generate_test_adv(self, images, save_dir, targeted=False, target_class=0):
-        pass
-
-    @abstractmethod
-    def generate_train_adv(self, images, values, save_dir, verbose=False):
-        pass
     
     
 class FGSM(AdversarialAttack):

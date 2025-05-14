@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import torch
-from dataset import get_test_set
+from test_set import get_test_set
 from utils import *
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
@@ -79,7 +79,7 @@ def main():
     np.random.seed(2025)
     NUM_SAMPLES_ADVERSARIAL = 1000  # numero di campioni da inserire nel test adversarial (dato che i dati clean sono 1000, usiamo 1000 campioni
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["pgd"]    
+    attack_types = ["fgsm", "bim"]    
 
     # Load Detectors
     detectors = load_detectors(attack_types, device)

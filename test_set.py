@@ -119,7 +119,7 @@ def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destin
             print(f"Copiate {len(selected_images)} immagini per {person_name}")
 
 # Funzione per processare le immagini del test set, portandole ad una size di 224x224
-def process_test_set(dataset_directory_destination, dataset_directory_processed):
+def process_dataset(dataset_directory_destination, dataset_directory_processed):
     
     def save_image(orig_path, face_img):
         relative_path = os.path.relpath(orig_path, dataset_directory_destination)
@@ -148,4 +148,4 @@ if __name__ == "__main__":
     dataset_directory_processed = './dataset/test_set/clean/processed' # Directory in cui salvare le immagini proccessate
     number_img_test = 10 # Numero massimo di immagini da copiare per ciascun ID (10 per 100 persone = 1000 img)
     create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img_test)
-    process_test_set(dataset_directory_destination, dataset_directory_processed)
+    process_dataset(dataset_directory_destination, dataset_directory_processed)
