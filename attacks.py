@@ -56,15 +56,13 @@ class DF(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, epsilon, nb_grads, max_iter, verbose):
+    def generate_attack(self, images, epsilon, nb_grads, max_iter):
         test_images_adv = []
         batch_dim = 1 # Numero di immagini da processare nel batch
         attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, nb_grads=nb_grads, verbose=False)
-        
         for j in tqdm(range (0, len(images), batch_dim), desc="DeepFool"):
             batch = images[j:j+batch_dim]  # Prendi batch_dim immagini
             test_images_adv.append(attack.generate(batch))
-
         # Concatenazione immagini adv
         test_images_adv = np.concatenate(test_images_adv, axis=0)
         return test_images_adv
