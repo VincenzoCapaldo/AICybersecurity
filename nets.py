@@ -10,7 +10,7 @@ from art.estimators.classification import PyTorchClassifier
 from torch.utils.data import DataLoader, TensorDataset, random_split
 from tqdm import tqdm
 
-NUM_CLASSES = 8631  # Numero di classi nel dataset VGGFace2
+NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 
 
 def conv3x3(in_planes, out_planes, stride=1):

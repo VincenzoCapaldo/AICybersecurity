@@ -6,7 +6,7 @@ from security_evaluation_curve import run_fgsm, run_bim, run_pgd, run_df, run_cw
 from utils import *
 
 
-NUM_CLASSES = 8631
+NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")

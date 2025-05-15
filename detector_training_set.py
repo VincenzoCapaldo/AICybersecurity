@@ -12,7 +12,7 @@ from attacks import BIM, CW, DF, FGSM, PGD
 from nets import setup_classifierNN1
 from utils import save_images_as_npy
 
-NUM_CLASSES = 8631 # numero di classi del dataset VGGface2
+NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 DIM_TRAIN = 1000 # numero di immagini del training set del detector
 
 # Trasformazioni da applicare a un'immagine
