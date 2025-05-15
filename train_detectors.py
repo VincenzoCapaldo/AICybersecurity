@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from nets import get_detector, setup_detector_classifier
+from nets import setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
 import torch
 from detector_training_set import get_train_set
