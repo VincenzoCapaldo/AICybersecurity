@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import torch
-from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 from utils import *
 from tqdm import tqdm
+from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod
 
 NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 
@@ -12,7 +12,7 @@ class AdversarialAttack(ABC):
         self.classifierNN1 = classifierNN1 # gli attacchi vengono effettuati sul classificatore NN1
 
     @abstractmethod
-    def generate_attack(self, images, targeted=False, target_class=0):
+    def generate_images(self, images, targeted=False, target_class=0):
         pass
 
 # Classe per la gestione dell'attacco FGSM (Fast Gradient Sign Method)
@@ -20,7 +20,7 @@ class FGSM(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, epsilon, targeted=False, targeted_labels=None):
+    def generate_images(self, images, epsilon, targeted=False, targeted_labels=None):
         attack = FastGradientMethod(estimator=self.classifierNN1, eps=epsilon, targeted=targeted)
         if targeted:
             # attacco targeted
@@ -35,7 +35,7 @@ class BIM(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
+    def generate_images(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = BasicIterativeMethod(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
         if targeted:
             # attacco targeted
@@ -50,7 +50,7 @@ class PGD(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
+    def generate_images(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
         if targeted:
             # attacco targeted
@@ -65,7 +65,7 @@ class DF(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, epsilon, nb_grads, max_iter):
+    def generate_images(self, images, epsilon, nb_grads, max_iter):
         # attacco untargeted (la libreria ART non supporta l'attacco DeepFool targeted)
         attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, nb_grads=nb_grads, max_iter=max_iter, verbose=False)
         # Per motivi di efficienza viene processata un'immagine alla volta
@@ -82,7 +82,7 @@ class CW(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, confidence, learning_rate, max_iter, targeted=False, targeted_labels=None):
+    def generate_images(self, images, confidence, learning_rate, max_iter, targeted=False, targeted_labels=None):
         attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, learning_rate=learning_rate, max_iter=max_iter, initial_const=0.1, targeted=targeted)
         if targeted:
             # attacco targeted
