@@ -103,7 +103,7 @@ class Bottleneck(nn.Module):
 
         return out
 
-
+# Definizione del modello SENet
 class SENet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, include_top=True):
@@ -111,11 +111,13 @@ class SENet(nn.Module):
         super(SENet, self).__init__()
         self.include_top = include_top
         
+        # Layer iniziali
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True)
 
+        # Blocchi principali
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
@@ -198,7 +200,7 @@ def load_state_dict(model, model_path):
         else:
             raise KeyError('unexpected key "{}" in state_dict'.format(name))
 
-
+# funzione per caricare il modello InceptionResnetV1 (NN1)
 def get_NN1(device="cpu", classify=True):
     NN1 = InceptionResnetV1(pretrained='vggface2').eval()
     NN1.to(device)
@@ -206,7 +208,7 @@ def get_NN1(device="cpu", classify=True):
     print("Modello NN1 caricato correttamente")
     return NN1
 
-
+# funzione per caricare il modello SENet (NN2)
 def get_NN2(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
     if not os.path.exists('./models'):
         os.makedirs('./models')
@@ -217,7 +219,7 @@ def get_NN2(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
     print("Modello NN2 caricato correttamente da", model_path)
     return model
 
-
+# Rete per rilevare immagini avversarie (adv)
 class AdversarialDetector(nn.Module):
     def __init__(self, backbone):
         super().__init__()
@@ -311,7 +313,7 @@ class AdversarialDetector(nn.Module):
         if best_model_state is not None:
             self.load_state_dict(best_model_state)
 
-
+# Restituisce una rete detector, con backbone InceptionResNet
 def get_detector(device="cpu", finetune=False):
 
     if finetune:
@@ -329,7 +331,7 @@ def get_detector(device="cpu", finetune=False):
     detector.to(device)
     return detector
 
-
+# Setup per classificatore NN1
 def setup_classifierNN1(device, classify=True):
     # Istanzio la rete
     nn1 = get_NN1(device, classify)
@@ -346,7 +348,7 @@ def setup_classifierNN1(device, classify=True):
     )
     return classifierNN1
 
-
+# Setup per classificatore NN2
 def setup_classifierNN2(device):
     # Istanzio la rete
     nn2 = get_NN2(device)
@@ -362,7 +364,7 @@ def setup_classifierNN2(device):
     )
     return classifierNN2
 
-
+# Setup per classificatore del detector
 def setup_detector_classifier(device):
     # Istanzio la rete
     detector = get_detector(device)

@@ -8,7 +8,7 @@ from nets import setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
 import torch
 
-
+# calcola la massima perturbazione introdotta tra immagini originali e adv 
 def compute_max_perturbation(test_images, test_images_adv, show=False):
     show_distribution = False
     if show_distribution:
@@ -46,7 +46,7 @@ def compute_max_perturbation(test_images, test_images_adv, show=False):
                 plt.show()
     return np.max(np.abs(test_images_adv - test_images))
 
-
+# calcola l'accuratezza del classificatore confrontando le predizioni con le etichette reali 
 def compute_accuracy(classifier, x_test, y_test):
     # Predizioni del modello (output con le probabilità per ogni classe)
     y_pred = classifier.predict(x_test)  # Shape: (N, 8631)
@@ -56,7 +56,7 @@ def compute_accuracy(classifier, x_test, y_test):
 
     # Calcoliamo l'accuratezza
     accuracy = accuracy_score(y_pred_labels, y_test)
-    return accuracy
+    return accuracy 
 
 
 def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=True):
@@ -121,7 +121,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
 
     return accuracy, n_fp
 
-
+# carica e restituisce un dizionario di detector ART salvati in locale 
 def load_detectors(attack_types, device):
     detectors = {}
     for attack_type in attack_types:
@@ -145,6 +145,7 @@ def process_images(images):
         image -= mean_bgr  # normalizzazione
         processed_images.append(image)
         
+    # restituisce immagini pronte per la seconda rete
     return np.stack(processed_images, axis=0)
 
 
@@ -160,7 +161,7 @@ def show_image(img, title=""):
     # Mostra la finestra e aspetta che venga chiusa
     plt.show(block=True)
 
-
+# salva un array di immagini in un file '.npy' in una cartella specifica
 def save_images_as_npy(images, filename, save_dir):
     os.makedirs(save_dir, exist_ok=True)
     filename = filename.replace(".", ",")
@@ -182,6 +183,7 @@ def load_images_from_npy_folder(folder_path):
 
     return images_list
 
+# carica e mostra sequenzialmente tutte le immagini contenute nel primo '.npy' della cartella
 def show_images_from_npy_folder(folder_path):
     images = load_images_from_npy_folder(folder_path)
 
