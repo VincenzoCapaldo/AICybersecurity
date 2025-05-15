@@ -81,7 +81,7 @@ def main():
 
     # Avvio dell'attacco selezionato TARGETED
     if "fgsm" in attack_types:
-        run_fgsm(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean,True, target_class, targeted_accuracy_clean, args.generate_samples)
+        run_fgsm(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
     if "bim" in attack_types:
         run_bim(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
     if "pgd" in attack_types:
