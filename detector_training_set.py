@@ -13,7 +13,7 @@ from nets import setup_classifierNN1
 from utils import save_images_as_npy
 
 NUM_CLASSES = 8631
-DIM_TRAIN = 1250 # 1000 train, 250 validation
+DIM_TRAIN = 1000
 
 # Trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
 trans = transforms.Compose([
