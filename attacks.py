@@ -5,17 +5,17 @@ from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, Projec
 from utils import *
 from tqdm import tqdm
 
-NUM_CLASSES = 8631
+NUM_CLASSES = 8631 # numero di classi del dataset VGGface2
 
 class AdversarialAttack(ABC):
     def __init__(self, classifierNN1):
-        self.classifierNN1 = classifierNN1
+        self.classifierNN1 = classifierNN1 # gli attacchi vengono effettuati sul classificatore NN1
 
     @abstractmethod
     def generate_attack(self, images, targeted=False, target_class=0):
         pass
-    
-    
+
+# Classe per la gestione dell'attacco FGSM (Fast Gradient Sign Method)
 class FGSM(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
@@ -28,6 +28,7 @@ class FGSM(AdversarialAttack):
         else:
             return attack.generate(images)    
 
+# Classe per la gestione dell'attacco BIM (Basic Iterative Method)
 class BIM(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
@@ -40,6 +41,7 @@ class BIM(AdversarialAttack):
         else:
             return attack.generate(images)    
 
+# Classe per la gestione dell'attacco PGD (Projected Gradient Descent)
 class PGD(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
@@ -52,6 +54,7 @@ class PGD(AdversarialAttack):
         else:
             return attack.generate(images)
 
+# Classe per la gestione dell'attacco DF (DeepFool)
 class DF(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
@@ -59,7 +62,7 @@ class DF(AdversarialAttack):
     def generate_attack(self, images, epsilon, nb_grads, max_iter):
         test_images_adv = []
         batch_dim = 1 # Numero di immagini da processare nel batch
-        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, nb_grads=nb_grads, verbose=False)
+        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, max_iter=max_iter, nb_grads=nb_grads)
         for j in tqdm(range (0, len(images), batch_dim), desc="DeepFool"):
             batch = images[j:j+batch_dim]  # Prendi batch_dim immagini
             test_images_adv.append(attack.generate(batch))
@@ -67,12 +70,13 @@ class DF(AdversarialAttack):
         test_images_adv = np.concatenate(test_images_adv, axis=0)
         return test_images_adv
 
+# Classe per la gestione dell'attacco CW (Carlini-Wagner)
 class CW(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, confidence, max_iter, learning_rate, targeted=False, targeted_labels=None):
-        attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, initial_const=0.1, targeted=targeted)
+    def generate_attack(self, images, confidence, learning_rate, max_iter, targeted=False, targeted_labels=None):
+        attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, learning_rate=learning_rate, max_iter=max_iter, initial_const=0.1, targeted=targeted)
         if targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)

@@ -161,18 +161,6 @@ def show_image(img, title=""):
     plt.show(block=True)
 
 
-def save_images_as_jpg(images, filename, save_dir):
-    os.makedirs(save_dir, exist_ok=True)
-    filename = filename.replace(".", ",")
-    for i, img_array in enumerate(images):
-        img_array = np.transpose(img_array, (1, 2, 0)) 
-        # Se float, scala a 0-255 e converti in uint8
-        if img_array.dtype == np.float32 or img_array.max() <= 1.0:
-            img_array = (img_array * 255).clip(0, 255).astype(np.uint8)
-        img = Image.fromarray(img_array)
-        img.save(os.path.join(save_dir, filename + f'_{i}.jpg'), format='JPG')
-
-
 def save_images_as_npy(images, filename, save_dir):
     os.makedirs(save_dir, exist_ok=True)
     filename = filename.replace(".", ",")
