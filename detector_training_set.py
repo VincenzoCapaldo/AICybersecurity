@@ -12,13 +12,13 @@ from attacks import BIM, CW, DF, FGSM, PGD
 from nets import setup_classifierNN1
 from utils import save_images_as_npy
 
-NUM_CLASSES = 8631
-DIM_TRAIN = 1000
+NUM_CLASSES = 8631 # numero di classi del dataset VGGface2
+DIM_TRAIN = 1000 # numero di immagini del training set del detector
 
-# Trasforma l'immagine in float, in tensore e poi la rappresenta da un intervallo [0, 255] a [-1, 1]
+# Trasformazioni da applicare a un'immagine
 trans = transforms.Compose([
-    transforms.ToTensor(),  # converte da HWC uint8 [0, 255] numpy → CHW float32 [0.0, 1.0] tensor
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # [0,1] → [-1,1] 
+    transforms.ToTensor(), # converte l'immagine [0, 255] in tensore [0, 1]
+    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) # converte il valore dei canali R, G, B da [0, 1] a [-1, 1]
 ])
 
 def get_train_set(images_dir="./dataset/detectors_train_set/clean/processed"):
@@ -28,12 +28,13 @@ def get_train_set(images_dir="./dataset/detectors_train_set/clean/processed"):
 class TrainSet(Dataset):
     def __init__(self, images_dir):
         self.images_dir = images_dir
-        self.n_max_images = DIM_TRAIN # Numero massimo di immagini del dataset (per fare prove più veloci)
+        self.n_max_images = DIM_TRAIN
         self.samples = []
 
         if not os.path.isdir(self.images_dir):
             raise FileNotFoundError(f"La directory {self.images_dir} non esiste.")
         
+        # Scorre i file nella directory e aggiunge i file .jpg alla lista dei sample
         for i, fname in enumerate(os.listdir(self.images_dir)):
             if fname.endswith('.jpg') and i < self.n_max_images:
                 self.samples.append(os.path.join(self.images_dir, fname))

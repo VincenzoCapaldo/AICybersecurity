@@ -49,7 +49,9 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
-
+    else:
+        targeted_labels = None
+        
     if generate_samples:
         attack = FGSM(classifier)
         i=0
@@ -98,6 +100,8 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
+    else:
+        targeted_labels = None
 
     plots = {
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e max_iter fissati)
@@ -186,6 +190,8 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
+    else:
+        targeted_labels = None
     
     plots = {
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e max_iter fissati)
@@ -348,7 +354,9 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
-    
+    else:
+        targeted_labels = None
+        
     plots = {
         # Calcolo dell'accuracy al variare di confidence e della perturbazione massima (con learning_rate e max_iter fissati)
         "plot1": {
