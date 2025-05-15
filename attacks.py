@@ -71,7 +71,7 @@ class CW(AdversarialAttack):
     def __init__(self, classifierNN1):
         super().__init__(classifierNN1)
 
-    def generate_attack(self, images, confidence, max_iter, learning_rate, targeted=False, targeted_labels=None):
+    def generate_attack(self, images, confidence, learning_rate, max_iter, targeted=False, targeted_labels=None):
         attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, max_iter=max_iter, learning_rate=learning_rate, initial_const=0.1, targeted=targeted)
         if targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
