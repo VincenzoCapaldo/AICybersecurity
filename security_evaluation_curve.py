@@ -413,11 +413,11 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
         imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
     
         if plot_name=="plot1":
-            x_axis_value = plot_data["confidence_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
+            x_axis_value = [0.0] + plot_data["confidence_values"]
         elif plot_name=="plot2":
-            x_axis_value = plot_data["learning_rate_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
+            x_axis_value = [0.0] + plot_data["learning_rate_values"]
         elif plot_name=="plot3":
-            x_axis_value = plot_data["max_iter_values"].insert(0, 0) # aggiunge 0 in posizione 0
+            x_axis_value = [0] + plot_data["max_iter_values"]
 
         max_perturbations = [0.0]
         accuracies = [accuracy_clean]
