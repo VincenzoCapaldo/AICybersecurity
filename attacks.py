@@ -67,7 +67,7 @@ class DF(AdversarialAttack):
 
     def generate_attack(self, images, epsilon, nb_grads, max_iter):
         # attacco untargeted (la libreria ART non supporta l'attacco DeepFool targeted)
-        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, nb_grads=nb_grads, max_iter=max_iter,)
+        attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, nb_grads=nb_grads, max_iter=max_iter, verbose=False)
         # Per motivi di efficienza viene processata un'immagine alla volta
         test_images_adv = []
         batch_dim = 1

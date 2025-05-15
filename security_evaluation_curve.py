@@ -4,11 +4,13 @@ import torch
 from attacks import  FGSM, BIM, PGD, DF, CW
 from utils import *
 
-def plot_accuracy(title, x_title, x, max_perturbations, accuracies, security_evaluation_curve_dir, targeted=False, targeted_accuracies=None):
+# Funzione per disegnare la security evaluation curve:
+# accuracy e targeted accuracy al variare di un parametro specifico dell'attacco (x) e della perturbazione massima
+def plot_accuracy(title, x_title, x, max_perturbation, accuracies, security_evaluation_curve_dir, targeted=False, targeted_accuracies=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title, fontsize=16)
-    #print(x, max_perturbations, accuracies)
-    # Accuracy and Targeted Accuracy vs x
+
+    # Accuracy e Targeted Accuracy vs un parametro specifico dell'attacco (x)
     axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
     if targeted:
         axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
@@ -18,15 +20,15 @@ def plot_accuracy(title, x_title, x, max_perturbations, accuracies, security_eva
     axes[0].set_xlabel(x_title)
     axes[0].grid()
 
-    # Accuracy and Targeted Accuracy vs Max Perturbations
-    axes[1].plot(max_perturbations, accuracies, marker='o', linestyle='-', color='b')
+    # Accuracy e Targeted Accuracy vs Max Perturbation
+    axes[1].plot(max_perturbation, accuracies, marker='o', linestyle='-', color='b')
     if targeted:
-        axes[1].plot(max_perturbations, targeted_accuracies, marker='o', linestyle='-', color='r')
+        axes[1].plot(max_perturbation, targeted_accuracies, marker='o', linestyle='-', color='r')
         axes[1].legend(["Accuracy", "Targeted Accuracy"], loc="upper right")
     else:
         axes[1].legend(["Accuracy"], loc="upper right")
-    axes[1].set_xlabel("Max Perturbations")
-    axes[1].axvline(x=0.1, color='red', linestyle='--', linewidth=1.5) # vincolo da rispettare
+    axes[1].set_xlabel("Max Perturbation")
+    axes[1].axvline(x=0.1, color='red', linestyle='--', linewidth=1.5) # linea rossa verticale sul vincolo da rispettare
     axes[1].grid()
     
     plt.tight_layout()

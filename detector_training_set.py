@@ -195,7 +195,7 @@ def generate_train_adv(classifier, images, attack_types, with_targeted=False):
             for i, eps in enumerate(epsilon_values):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
                 x_subset = images[start:end]
-                adv_examples = attack.generate_attack(x_subset, eps, max_iter=5)
+                adv_examples = attack.generate_attack(x_subset, eps, nb_grads=10, max_iter=10)
                 save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for df.")
 
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     
     # Generazione dati adv
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    attack_types = ["fgsm", "bim", "pgd"]
+    attack_types = ["df", "cw"]
     train_images_clean = get_train_set().get_images() 
     generate_train_adv(setup_classifierNN1(device), train_images_clean, attack_types)
     
