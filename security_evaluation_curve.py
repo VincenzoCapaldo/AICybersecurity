@@ -51,20 +51,21 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
     else:
         targeted_labels = None
-        
+
+    clean_images, clean_labels = test_set.get_images()
+
     if generate_samples:
         attack = FGSM(classifier)
         i=0
         for epsilon in epsilon_values:
             # Generazione delle immagini avversarie
-            imgs_adv = attack.generate_attack(test_set, epsilon, targeted, targeted_labels)
+            imgs_adv = attack.generate_attack(clean_images, epsilon, targeted, targeted_labels)
             save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon}", test_set_adversarial_dir)
             i+=1
         print("Test adversarial examples generated and saved successfully for fgsm.")
     
     # Caricamento delle immagini adv
     imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
-    clean_images, clean_labels = test_set.get_images()
     
     epsilon_values = [0.0] + epsilon_values
     max_perturbations = [0.0]
@@ -102,6 +103,8 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
     else:
         targeted_labels = None
+
+    clean_images, clean_labels = test_set.get_images()
 
     plots = {
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e max_iter fissati)
@@ -143,15 +146,14 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                 for epsilon_step in plot_data["epsilon_step_values"]:
                     for max_iter in plot_data["max_iter_values"]:
                         # Generazione delle immagini avversarie
-                        imgs_adv = attack.generate_attack(test_set, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
+                        imgs_adv = attack.generate_attack(clean_images, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};eps_step_{epsilon_step};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for bim.")
         
         # Caricamento delle immagini adv
         imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-        clean_images, clean_labels = test_set.get_images()
-    
+        
         if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["epsilon_values"]
         elif plot_name=="plot2":
@@ -193,6 +195,8 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
     else:
         targeted_labels = None
     
+    clean_images, clean_labels = test_set.get_images()
+
     plots = {
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con epsilon_step e max_iter fissati)
         "plot1": {
@@ -233,7 +237,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                 for epsilon_step in plot_data["epsilon_step_values"]:
                     for max_iter in plot_data["max_iter_values"]:
                         # Generazione delle immagini avversarie
-                        imgs_adv = attack.generate_attack(test_set, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
+                        imgs_adv = attack.generate_attack(clean_images, epsilon, epsilon_step, max_iter, targeted, targeted_labels)
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};eps_step_{epsilon_step};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for pgd.")
@@ -278,6 +282,8 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./security_evaluation_curve/" + attack_dir
 
+    clean_images, clean_labels = test_set.get_images()
+
     plots = {
         # Calcolo dell'accuracy al variare di epsilon e della perturbazione massima (con nb_grads e max_iter fissati)
         "plot1": {
@@ -315,14 +321,13 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
                 for nb_grads in plot_data["nb_grads_values"]:
                     for max_iter in plot_data["max_iter_values"]:
                         # Generazione delle immagini avversarie
-                        imgs_adv = attack.generate_attack(test_set, epsilon, nb_grads, max_iter)
+                        imgs_adv = attack.generate_attack(clean_images, epsilon, nb_grads, max_iter)
                         save_images_as_npy(imgs_adv, f"{i}_eps_{epsilon};nb_grads_{nb_grads};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for df.")
         
         # Caricamento delle immagini adv
         imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["epsilon_values"]
@@ -356,7 +361,9 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
     else:
         targeted_labels = None
-        
+    
+    clean_images, clean_labels = test_set.get_images()
+
     plots = {
         # Calcolo dell'accuracy al variare di confidence e della perturbazione massima (con learning_rate e max_iter fissati)
         "plot1": {
@@ -397,14 +404,13 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
                 for learning_rate in plot_data["learning_rate_values"]:
                     for max_iter in plot_data["max_iter_values"]:
                         # Generazione delle immagini avversarie
-                        imgs_adv = attack.generate_attack(test_set, confidence, learning_rate, max_iter, targeted, targeted_labels)
+                        imgs_adv = attack.generate_attack(clean_images, confidence, learning_rate, max_iter, targeted, targeted_labels)
                         save_images_as_npy(imgs_adv, f"{i}_confidence_{confidence};learning_rate_{learning_rate};max_iter_{max_iter}", test_set_adv_dir)
                         i+=1
             print("Test adversarial examples generated and saved successfully for cw.")
         
         # Caricamento delle immagini adv
         imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
-        clean_images, clean_labels = test_set.get_images()
     
         if plot_name=="plot1":
             x_axis_value = plot_data["confidence_values"].insert(0, 0.0) # aggiunge 0.0 in posizione 0
