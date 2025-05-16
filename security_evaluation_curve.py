@@ -117,7 +117,7 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
     plots = {
         # Calcolo dell'accuracy al variare di epsilon (con epsilon_step e max_iter fissati)
-        "samples_plot1": {
+        "plot1": {
             "epsilon_values": [0.01, 0.02, 0.04, 0.06, 0.08, 0.1],
             "epsilon_step_values": [0.01],
             "max_iter_values": [10],
@@ -126,7 +126,7 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             "x_axis_name": "Epsilon"
         },
         # Calcolo dell'accuracy al variare di epsilon_step (con epsilon e max_iter fissati)
-        "samples_plot2": {
+        "plot2": {
             "epsilon_values": [0.1],
             "epsilon_step_values": [0.01, 0.02, 0.03, 0.04, 0.05],
             "max_iter_values": [10],
@@ -135,18 +135,18 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             "x_axis_name": "Epsilon Step"
         },
         # Calcolo dell'accuracy al variare di max_iter (con epsilon e epsilon_step fissati)
-        "samples_plot3": {
+        "plot3": {
             "epsilon_values": [0.1],
             "epsilon_step_values": [0.01],
             "max_iter_values": [1, 3, 5, 7, 10],
-            "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0.01)",
+            "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
             "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
             "x_axis_name": "Max Iterations"
         }
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" + plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -162,14 +162,14 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             print("Test adversarial examples generated and saved successfully for bim.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
+        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
         
         # Aggiunta delle performance sui dati clean
-        if plot_name=="samples_plot1":
+        if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["epsilon_values"]
-        elif plot_name=="samples_plot2":
+        elif plot_name=="plot2":
             x_axis_value = [0.0] + plot_data["epsilon_step_values"]
-        elif plot_name=="samples_plot3":
+        elif plot_name=="plot3":
             x_axis_value = [0] + plot_data["max_iter_values"]
         max_perturbations = [0.0]
         accuracies = [accuracy_clean]
@@ -212,7 +212,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
     plots = {
         # Calcolo dell'accuracy al variare di epsilon (con epsilon_step e max_iter fissati)
-        "samples_plot1": {
+        "plot1": {
             "epsilon_values": [0.01, 0.02, 0.04, 0.06, 0.08, 0.1],
             "epsilon_step_values": [0.01],
             "max_iter_values": [10],
@@ -221,7 +221,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             "x_axis_name": "Epsilon"
         },
         # Calcolo dell'accuracy al variare di epsilon_step (con epsilon e max_iter fissati)
-        "samples_plot2": {
+        "plot2": {
             "epsilon_values": [0.1],
             "epsilon_step_values": [0.01, 0.02, 0.03, 0.04, 0.05],
             "max_iter_values": [10],
@@ -230,7 +230,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             "x_axis_name": "Epsilon Step"
         },
         # Calcolo dell'accuracy al variare di max_iter (con epsilon e epsilon_step fissati)
-        "samples_plot3": {
+        "plot3": {
             "epsilon_values": [0.1],
             "epsilon_step_values": [0.01],
             "max_iter_values": [1, 3, 5, 7, 10],
@@ -241,7 +241,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -257,14 +257,14 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             print("Test adversarial examples generated and saved successfully for pgd.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
+        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
     
         # Aggiunta delle performance sui dati clean
-        if plot_name=="samples_plot1":
+        if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["epsilon_values"]
-        elif plot_name=="samples_plot2":
+        elif plot_name=="plot2":
             x_axis_value = [0.0] + plot_data["epsilon_step_values"]
-        elif plot_name=="samples_plot3":
+        elif plot_name=="plot3":
             x_axis_value = [0] + plot_data["max_iter_values"]
         max_perturbations = [0.0]
         accuracies = [accuracy_clean]
@@ -302,7 +302,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
 
     plots = {
         # Calcolo dell'accuracy al variare di epsilon (con nb_grads e max_iter fissati)
-        "samples_plot1": {
+        "plot1": {
             "epsilon_values": [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1],
             "nb_grads_values": [10],
             "max_iter_values": [10],
@@ -310,7 +310,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
             "x_axis_name": "Epsilon"
         },
         # Calcolo dell'accuracy al variare di epsilon_step (con epsilon e max_iter fissati)
-        "samples_plot2": {
+        "plot2": {
             "epsilon_values": [1e-2],
             "nb_grads_values": [5, 10, 20, 50],
             "max_iter_values": [10],
@@ -318,7 +318,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
             "x_axis_name": "Nb Grads"
         },
         # Calcolo dell'accuracy al variare di max_iter (con epsilon e nb_grads fissati)
-        "samples_plot3": {
+        "plot3": {
             "epsilon_values": [1e-2],
             "nb_grads_values": [10],
             "max_iter_values": [1, 3, 5, 7, 10],
@@ -328,7 +328,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -344,14 +344,14 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
             print("Test adversarial examples generated and saved successfully for df.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
+        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
 
         # Aggiunta delle performance sui dati clean
-        if plot_name=="samples_plot1":
+        if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["epsilon_values"]
-        elif plot_name=="samples_plot2":
+        elif plot_name=="plot2":
             x_axis_value = [0] + plot_data["nb_grads_values"]
-        elif plot_name=="samples_plot3":
+        elif plot_name=="plot3":
             x_axis_value = [0] + plot_data["max_iter_values"]
         max_perturbations = [0.0]
         accuracies = [accuracy_clean]
@@ -385,7 +385,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
 
     plots = {
         # Calcolo dell'accuracy al variare di confidence (con learning_rate e max_iter fissati)
-        "samples_plot1": {
+        "plot1": {
             "confidence_values": [0.01, 0.1, 1],
             "learning_rate_values": [0.01],
             "max_iter_values": [3],
@@ -394,7 +394,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
             "x_axis_name": "Confidence"
         },
         # Calcolo dell'accuracy al variare di learning_rate (con confidence e max_iter fissati)
-        "samples_plot2": {
+        "plot2": {
             "confidence_values": [0.1],
             "learning_rate_values": [0.01, 0.05, 0.1],
             "max_iter_values": [3],
@@ -403,18 +403,18 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
             "x_axis_name": "Learning Rate"
         },
         # Calcolo dell'accuracy al variare di max_iter (con confidence e learning_rate fissati)
-        "samples_plot3": {
+        "plot3": {
             "confidence_values": [0.1],
             "learning_rate_values": [0.01],
             "max_iter_values": [1, 3, 5],
-            "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Confidence=0.1; Learning_rate=0,01)",
-            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Learning_rate=0.01)",
+            "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Learning_rate=0,01)",
+            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Learning_rate=0,01)",
             "x_axis_name": "Max Iterations"
         }
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -430,14 +430,14 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
             print("Test adversarial examples generated and saved successfully for cw.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
+        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
     
         # Aggiunta delle performance sui dati clean
-        if plot_name=="samples_plot1":
+        if plot_name=="plot1":
             x_axis_value = [0.0] + plot_data["confidence_values"]
-        elif plot_name=="samples_plot2":
+        elif plot_name=="plot2":
             x_axis_value = [0.0] + plot_data["learning_rate_values"]
-        elif plot_name=="samples_plot3":
+        elif plot_name=="plot3":
             x_axis_value = [0] + plot_data["max_iter_values"]
         max_perturbations = [0.0]
         accuracies = [accuracy_clean]
