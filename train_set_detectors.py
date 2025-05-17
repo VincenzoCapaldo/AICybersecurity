@@ -211,13 +211,12 @@ if __name__ == "__main__":
     dataset_directory_destination = './dataset/detectors_train_set/clean/original' # Directory in cui salvare le immagini selezionate
     dataset_directory_processed = './dataset/detectors_train_set/clean/processed' # Directory in cui salvare le immagini proccessate
     dim_train_set = 1000 # numero di immagini del train set per i detectors
-    #create_train_set_clean(dataset_directory_origin, dataset_directory_destination, dim_train_set) # crea il train set clean
-    #process_clean_images(dataset_directory_destination, dataset_directory_processed) # processa le immagini del train set clean
+    create_train_set_clean(dataset_directory_origin, dataset_directory_destination, dim_train_set) # crea il train set clean
+    process_clean_images(dataset_directory_destination, dataset_directory_processed) # processa le immagini del train set clean
     
     # Generazione del train set adversarial
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     classifier = setup_classifierNN1(device)
     train_images_clean = get_train_set().get_images()
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["cw"]
     create_train_set_adv(classifier, train_images_clean, attack_types, with_targeted=False) # crea il train set adversarial
