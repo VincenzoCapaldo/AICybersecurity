@@ -17,7 +17,6 @@ def main():
     train_images_clean = get_train_set().get_images()
 
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["cw"]
 
     # Addestramento dei detectors (uno per ogni attacco):
     for attack_type in attack_types:
