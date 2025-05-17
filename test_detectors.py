@@ -1,16 +1,11 @@
 import numpy as np
 import os
 import torch
-from test_set import get_test_set
-from utils import *
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
+from utils import *
 from sklearn.metrics import ConfusionMatrixDisplay
-
-
-def load_images_from_npy_folder(folder):
-    files = [f for f in os.listdir(folder) if f.endswith(".npy")]
-    return [os.path.join(folder, f) for f in sorted(files)]  # restituisce i path completi
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from test_set import get_test_set
 
 def get_adversarial_images(images_dir, num_samples=1000):
     # trova tutte le sottocartelle
@@ -22,7 +17,8 @@ def get_adversarial_images(images_dir, num_samples=1000):
     # raccoglie tutti i file .npy
     all_npy_files = []
     for folder in folders_to_process:
-        npy_files = load_images_from_npy_folder(folder)
+        files = [f for f in os.listdir(folder) if f.endswith(".npy")]
+        npy_files = [os.path.join(folder, f) for f in sorted(files)]  # restituisce i path completi
         all_npy_files.extend(npy_files)
 
     if not all_npy_files:
@@ -69,19 +65,17 @@ def compute_roc_curve(true_label, model_predictions, attack, save_plot=False, sh
         plt.savefig(save_dir + file_name)
 
 def main():
-    # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
+    np.random.seed(33)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    plot_dir = "./plots/detectors/"  # Directory per i plot
+    # Crezione della directory in cui salvare i plot dei detectors:
+    plot_dir = "./plots/detectors/"
     os.makedirs(plot_dir, exist_ok=True)
-    os.makedirs("./models", exist_ok=True)  # Directory per i modelli
 
-    # Imposta il seed per ripetere gli esperimenti
-    np.random.seed(2025)
     NUM_SAMPLES_ADVERSARIAL = 1000  # numero di campioni da inserire nel test adversarial (dato che i dati clean sono 1000, usiamo 1000 campioni)
+    
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    attack_types = ["fgsm", "bim", "pgd"]    
 
     # Carica i Detectors
     detectors = load_detectors(attack_types, device)
@@ -96,15 +90,15 @@ def main():
 
         # Deepfool ha solo untargeted
         if attack_type == "df":
-            images_dir1 = images_dir + "/untargeted/plot1"
+            images_dir1 = images_dir + "/untargeted/samples_plot1"
             imgs_adv = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL)
         else:
             if attack_type == "fgsm":
                 images_dir1 = images_dir + "/untargeted"
                 images_dir2 = images_dir + "/targeted"
             else:
-                images_dir1 = images_dir + "/untargeted/plot1"
-                images_dir2 = images_dir + "/targeted/plot1"
+                images_dir1 = images_dir + "/untargeted/samples_plot1"
+                images_dir2 = images_dir + "/targeted/samples_plot1"
             imgs_adv1 = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL//2)
             imgs_adv2 = get_adversarial_images(images_dir2, NUM_SAMPLES_ADVERSARIAL//2)
             imgs_adv = np.concatenate((imgs_adv1, imgs_adv2), axis=0)
@@ -149,7 +143,6 @@ def main():
         probs = probs[:, 1]
         compute_roc_curve(final_labels, probs, attack_type, save_plot=True, show_plot=False, save_dir=plot_dir)
         print(f"ROC curve {attack_type} salvata")
-
 
 if __name__ == "__main__":
     main()
