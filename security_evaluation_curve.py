@@ -42,8 +42,8 @@ def plot_curve(title, x_title, x, max_perturbation, accuracies, security_evaluat
 # Funziona che genera i campioni adversarial FGSM (se generate_samples=True) e la relativa security evaluation curve.
 def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
     attack_dir = "fgsm/targeted/" if targeted else "fgsm/untargeted/"
-    test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
-    security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
+    test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir + "samples_plot1"
+    security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir + "samples_plot1"
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
@@ -241,7 +241,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" + plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -328,7 +328,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" + plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
@@ -414,7 +414,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
     }
 
     for plot_name, plot_data in plots.items():
-        test_set_adv_dir = test_set_adversarial_dir + "samples_" +  plot_name
+        test_set_adv_dir = test_set_adversarial_dir + "samples_" + plot_name
         security_evaluation_curve_dir = evaluation_curve_dir + plot_name
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)

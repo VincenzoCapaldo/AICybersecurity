@@ -191,7 +191,6 @@ def show_images_from_npy_folder(folder_path):
 
     for i, img in enumerate(image_set):
         show_image(img, f'Immagine {i+1}/{len(image_set)}')
-    
 
 if __name__ == "__main__":
     show_images_from_npy_folder("./dataset/test_set/adversarial_examples/df/plot1")

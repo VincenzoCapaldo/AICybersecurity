@@ -177,7 +177,7 @@ def create_train_set_adv(classifier, images, attack_types, with_targeted=False):
                 start, end = i * split_size, (i + 1) * split_size if i < len(epsilon_values)-1 else n_samples
                 x_subset = images[start:end]
                 adv_examples = attack.generate_images(x_subset, eps, nb_grads=10, max_iter=10)
-                save_images_as_npy(adv_examples, f"eps_{eps}", save_dir)
+                save_images_as_npy(adv_examples, f"untargeted_eps_{eps}", save_dir)
             print("Training adversarial examples generated and saved successfully for df.")
         if attack_name == "cw":
             attack = CW(classifier)
@@ -219,4 +219,4 @@ if __name__ == "__main__":
     classifier = setup_classifierNN1(device)
     train_images_clean = get_train_set().get_images()
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    create_train_set_adv(classifier, train_images_clean, attack_types, with_targeted=False) # crea il train set adversarial
+    create_train_set_adv(classifier, train_images_clean, attack_types, with_targeted=True) # crea il train set adversarial

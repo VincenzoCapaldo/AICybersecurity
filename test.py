@@ -10,19 +10,15 @@ NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument("--classifier_name", type=str, default="NN1 + detectors", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
-    #parser.add_argument('--threshold', type=float, default=0.5, help='Threshold per le rilevazioni dei detector')
-    parser.add_argument('--generate_samples', type=bool, default=False, help='True to generate test set adv')
+    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
+    parser.add_argument('--generate_samples', type=bool, default=True, help='True to generate test set adv')
     args = parser.parse_args()
     
-    # Controlla se CUDA è disponibile e imposta il dispositivo di conseguenza
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Attacchi selezionati 
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
     attack_types = ["fgsm", "bim", "pgd"]
-    print(f"Selected attacks: {attack_types}")
 
     # Test set clean
     test_set = get_test_set()
