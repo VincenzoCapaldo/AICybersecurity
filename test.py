@@ -10,8 +10,7 @@ NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
 
 def main():
     parser = argparse.ArgumentParser(description="Run adversarial attacks on a classifier.")
-    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
-    parser.add_argument('--generate_samples', type=bool, default=True, help='True to generate test set adv')
+    parser.add_argument('--generate_samples', type=bool, default=False, help='True to generate test set adv')
     args = parser.parse_args()
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,73 +21,66 @@ def main():
 
     # Test set clean
     test_set = get_test_set()
-    images, labels = test_set.get_images()
+    clean_images, clean_labels = test_set.get_images()
 
-    # Setup del classificatore da testare
-    detectors = None
-    if args.classifier_name == "NN2":
-        classifier = setup_classifierNN2(device)
-        images = process_images(images) # Preprocessing delle immagini per il secondo classificatore
-    else:
-        classifier = setup_classifierNN1(device)
-        
-    #### FASE DI VALUTAZIONE SUI DATI CLEAN ####
+    # Setup dei classificatori
+    classifiers_name = ["NN1", "NN2", "NN1 + detector"] # Nome dei classificatori
+    classifiers = {}
+    classifiers["NN1"] = setup_classifierNN1(device)
+    classifiers["NN2"] = setup_classifierNN2(device)
+    classifiers["NN1 + detector"] = setup_classifierNN1(device)
 
-    # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
-    accuracy_clean = compute_accuracy(classifier, images, labels)
-    print(f"Accuracy del classificatore {args.classifier_name} su dati clean: {accuracy_clean:.3f}")
+    #### FASE DI VALUTAZIONE SUI DATI CLEAN DEI CLASSIFICATORI ####
+    accuracies_clean = {}
+    targeted_accuracies_clean = {}
+    adv_labels = np.zeros(clean_images.shape[0], dtype=bool) # Tutti i campioni sono puliti (classe 0)
+    for name in classifiers_name:
+        # Caricamento delle immagini clean
+        if name == "NN1":
+            images = clean_images
+            detectors = None
+        elif name == "NN2":
+            images = process_images(clean_images) # Preprocessing delle immagini per il secondo classificatore
+            detectors = None
+        else:
+            images = clean_images
+            detectors = load_detectors(attack_types, device)
 
-    # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
-    target_class_label = "Cristiano_Ronaldo"
-    target_class = test_set.get_true_label(target_class_label)
-    targeted_labels = target_class * torch.ones(labels.size, dtype=torch.long)
-    targeted_accuracy_clean = compute_accuracy(classifier, images, targeted_labels)
-    print(f"Targeted accuracy del classificatore {args.classifier_name} su dati clean: {targeted_accuracy_clean:.3f}")
-
-    # Valutazione del classificatore col sistema di difesa
-    if args.classifier_name == "NN1 + detectors":
-        # Caricamento dei detectors
-        detectors = load_detectors(attack_types, device)
-
-        # Valutare detectors + classifier sui dati clean del test set
-        adv_labels = np.zeros(images.shape[0], dtype=bool) # Tutti i campioni sono puliti (classe 0)
-        accuracy_clean, fp = compute_accuracy_with_detectors(classifier, images, labels, adv_labels, detectors, targeted=False)
-        print(f"Accuracy del classificatore NN1 col filtraggio dei detectors: {accuracy_clean:.3f}")
-        print(f"Numero di immagini scartate dai detectors (FP): {fp}")
+        # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere
+        accuracies_clean[name] = compute_accuracy(classifiers[name], images, clean_labels, adv_labels, detectors)
+        print(f"Accuracy del classificatore {name} su dati clean: {accuracies_clean[name]:.3f}")
 
         # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target
-        targeted_accuracy_clean, fp = compute_accuracy_with_detectors(classifier, images, targeted_labels, adv_labels, detectors, targeted=True)
-        print(f"Targeted accuracy del classificatore NN1 col filtraggio dei detectors: {targeted_accuracy_clean:.3f}")
-        print(f"Numero di immagini scartate dai detectors (FP): {fp}")
+        target_class_label = "Cristiano_Ronaldo"
+        target_class = test_set.get_true_label(target_class_label)
+        targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+        targeted_accuracies_clean[name] = compute_accuracy(classifiers[name], images, targeted_labels, adv_labels, detectors, targeted=True)
+        print(f"Targeted accuracy del classificatore {name} su dati clean: {targeted_accuracies_clean[name]:.3f}")
 
     #### FASE DI VALUTAZIONE SUI DATI ADV ####
 
     # Avvio dell'attacco selezionato UNTARGETED
     if "fgsm" in attack_types:
-        run_fgsm(classifier, args.classifier_name, test_set, accuracy_clean, detectors, generate_samples=args.generate_samples)
+        run_fgsm(classifiers, classifiers_name, detectors, test_set, accuracies_clean, generate_samples=args.generate_samples)
     if "bim" in attack_types:
-        run_bim(classifier, args.classifier_name, test_set, accuracy_clean, detectors, generate_samples=args.generate_samples)
+        run_bim(classifiers, classifiers_name, detectors, test_set, accuracies_clean, generate_samples=args.generate_samples)
     if "pgd" in attack_types:
-        run_pgd(classifier, args.classifier_name, test_set, accuracy_clean, detectors, generate_samples=args.generate_samples)
+        run_pgd(classifiers, classifiers_name, detectors, test_set, accuracies_clean, generate_samples=args.generate_samples)
     if "df" in attack_types:
-        run_df(classifier, args.classifier_name, test_set, accuracy_clean, detectors, generate_samples=args.generate_samples)
+        run_df(classifiers, classifiers_name, detectors, test_set, accuracies_clean, generate_samples=args.generate_samples)
     if "cw" in attack_types:
-        run_cw(classifier, args.classifier_name, test_set, accuracy_clean, detectors, generate_samples=args.generate_samples)
+        run_cw(classifiers, classifiers_name, detectors, test_set, accuracies_clean, generate_samples=args.generate_samples)
 
     # Avvio dell'attacco selezionato TARGETED
     if "fgsm" in attack_types:
-        run_fgsm(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
+        run_fgsm(classifiers, classifiers_name, detectors, test_set, accuracies_clean, True, target_class, targeted_accuracies_clean, args.generate_samples)
     if "bim" in attack_types:
-        run_bim(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
+        run_bim(classifiers, classifiers_name, detectors, test_set, accuracies_clean, True, target_class, targeted_accuracies_clean, args.generate_samples)
     if "pgd" in attack_types:
-        run_pgd(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
+        run_pgd(classifiers, classifiers_name, detectors, test_set, accuracies_clean, True, target_class, targeted_accuracies_clean, args.generate_samples)
     if "cw" in attack_types:
-        run_cw(classifier, args.classifier_name, test_set, accuracy_clean, detectors, True, target_class, targeted_accuracy_clean, args.generate_samples)
+        run_cw(classifiers, classifiers_name, detectors, test_set, accuracies_clean, True, target_class, targeted_accuracies_clean, args.generate_samples)
 
 
 if __name__ == "__main__":
     main()
-
-
-# questo si puo levare, bisogna solo mettere da una parte il calcolo delle performance clean, lo possiamo fare o direttamente nelle
-# security evaluation curve o nel file dove creaiamo e il test set
