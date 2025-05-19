@@ -47,23 +47,19 @@ def compute_max_perturbation(test_images, test_images_adv, show=False):
     return np.max(np.abs(test_images_adv - test_images))
 
 # calcola l'accuratezza del classificatore confrontando le predizioni con le etichette reali 
-def compute_accuracy(classifier, x_test, y_test, y_adv=None, detectors=None, threshold=0.5, targeted=False):
-    # Calcola l'accuracy del classificatore senza detector
-    if detectors is None:
-        # Predizioni del modello (output con le probabilità per ogni classe)
-        y_pred = classifier.predict(x_test)  # Shape: (N, 8631)
+def compute_accuracy(classifier, x_test, y_test):
+    # Predizioni del modello (output con le probabilità per ogni classe)
+    y_pred = classifier.predict(x_test)  # Shape: (N, 8631)
 
-        # Convertiamo da probabilità a etichette (argmax sulle colonne)
-        y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
+    # Convertiamo da probabilità a etichette (argmax sulle colonne)
+    y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
 
-        # Calcoliamo l'accuratezza
-        return accuracy_score(y_pred_labels, y_test)
-    else:
-        # Calcola l'accuracy del classificatore coi detector
-        return compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold, targeted)
+    # Calcoliamo l'accuratezza
+    accuracy = accuracy_score(y_pred_labels, y_test)
+    return accuracy 
 
 
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold, targeted, verbose=False):
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=True):
     """
     Calcola l'accuracy penalizzando i falsi positivi dei detector.
     - classifier: il classificatore (con metodo predict).
@@ -112,8 +108,6 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
 
     # Falsi positivi: campioni puliti scartati dai detector (0,1)
     n_fp = np.sum(np.logical_and(is_adversarial, ~y_adv))
-    if verbose:
-        print(f"Numero di falsi positivi: {n_fp} (soglia={threshold}).")
     
     # Campioni correttamente scartati (1,1)
     n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
@@ -125,7 +119,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     else:    
         accuracy = (n_correct + n_correct_discarded) / n_total
 
-    return accuracy
+    return accuracy, n_fp
 
 # carica e restituisce un dizionario di detector ART salvati in locale 
 def load_detectors(attack_types, device):
@@ -197,6 +191,7 @@ def show_images_from_npy_folder(folder_path):
 
     for i, img in enumerate(image_set):
         show_image(img, f'Immagine {i+1}/{len(image_set)}')
+    
 
 if __name__ == "__main__":
     show_images_from_npy_folder("./dataset/test_set/adversarial_examples/df/plot1")
