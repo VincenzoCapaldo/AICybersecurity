@@ -66,7 +66,7 @@ def main():
         
         # Chiamata al detector specifico dell'attacco
         detector = detectors[attack_type]
-        _, is_adversarial = detector.detect(final_test_set)
+        report, is_adversarial = detector.detect(final_test_set)
 
         # Calcolo delle metriche di test
         y_true = final_labels
@@ -94,7 +94,10 @@ def main():
         plt.savefig(plot_dir + "/Confusion_Matrix.png")
 
         # Creazione e salvataggio della curva ROC
-        false_positive_rate, true_positive_rate, _ = roc_curve(y_true, y_pred)
+        logits = np.array(report["predictions"])
+        probs = softmax(logits, axis=1) # contiene le probabilità delle classe "clean" e "adversarial"
+        probs_adv = probs[:, 1] # contiene solo le probabilità delle classe "adversarial"
+        false_positive_rate, true_positive_rate, _ = roc_curve(y_true, probs_adv)
         roc_auc = auc(false_positive_rate, true_positive_rate)
         plt.figure()
         plt.grid()
