@@ -1,11 +1,11 @@
 import os
-from sklearn.base import accuracy_score
 import torch
 import argparse
 from matplotlib import pyplot as plt
 from nets import setup_NN1_classifier, setup_NN2_classifier
-from utils import *
 from attacks import  FGSM, BIM, PGD, DF, CW
+from sklearn.metrics import accuracy_score
+from scipy.special import softmax
 from test_set import get_test_set
 from utils import *
 
@@ -46,7 +46,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     for name, detector in detectors.items(): # per ogni detector
         report, _ = detector.detect(x_test) # chiamata al detector
         logits = np.array(report["predictions"]) # contiene i logits delle classi "clean" e "adversarial"
-        probs = torch.softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
+        probs = softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
         probs_adv = probs[:, 1] # contiene solo le probabilità delle classi "adversarial"
         is_adversarial = probs_adv > threshold # controlla se i campioni sono adversarial
         detection_error = np.sum(is_adversarial != y_adv) # conta il numero di errori del detectors
@@ -119,9 +119,9 @@ def computing_accuracy_for_plot(classifier, clean_images, clean_labels, test_set
             targeted_acc.append(compute_accuracy(classifier[0], imgs_adv, targeted_labels))
         if detectors is not None:
             adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-            detector_acc.append(compute_accuracy_with_detectors(classifier[0], imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+            detector_acc.append(compute_accuracy_with_detectors(classifier[0], imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
             if targeted:
-                detector_targeted_acc.append(compute_accuracy_with_detectors(classifier[0], imgs_adv, targeted_labels, adv_flag, detectors, targeted=True)[0])
+                detector_targeted_acc.append(compute_accuracy_with_detectors(classifier[0], imgs_adv, targeted_labels, adv_flag, detectors, targeted=True))
 
     return acc, targeted_acc, detector_acc, detector_targeted_acc, max_perturbations
 

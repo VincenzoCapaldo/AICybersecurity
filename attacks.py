@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
 import numpy as np
 import torch
+from abc import ABC, abstractmethod
 from utils import *
 from tqdm import tqdm
 from art.attacks.evasion import FastGradientMethod, BasicIterativeMethod, ProjectedGradientDescent, DeepFool, CarliniLInfMethod

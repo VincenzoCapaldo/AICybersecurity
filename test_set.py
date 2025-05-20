@@ -2,12 +2,12 @@ import os
 import csv
 import random
 import shutil
+import tqdm
 import numpy as np
 from glob import glob
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-import tqdm
 
 # Funzione per creare il test set a partire dal dataset originale e da un file CSV contenente le identità scelte.
 def create_test_set(csv_file, dataset_directory_origin, dataset_directory_destination, number_img_for_person):

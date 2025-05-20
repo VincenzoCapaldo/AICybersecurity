@@ -1,10 +1,10 @@
 import numpy as np
 import os
 import torch
-from utils import *
-from train_set_detectors import get_train_set
+from detectors_train_set import get_train_set
 from nets import setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
+from utils import *
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -2,6 +2,7 @@ import numpy as np
 import os
 import torch
 import matplotlib.pyplot as plt
+from scipy.special import softmax
 from utils import *
 from sklearn.metrics import *
 from test_set import get_test_set
@@ -96,7 +97,7 @@ def main():
 
         # Creazione e salvataggio della curva ROC
         logits = np.array(report["predictions"]) # contiene i logits delle classi "clean" e "adversarial"
-        probs = torch.softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
+        probs = softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
         probs_adv = probs[:, 1] # contiene solo le probabilità delle classi "adversarial"
         false_positive_rate, true_positive_rate, _ = roc_curve(y_true, probs_adv)
         roc_auc = auc(false_positive_rate, true_positive_rate)
