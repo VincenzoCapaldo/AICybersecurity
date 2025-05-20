@@ -23,11 +23,11 @@ class FGSM(AdversarialAttack):
     def generate_images(self, images, epsilon, targeted=False, targeted_labels=None):
         attack = FastGradientMethod(estimator=self.classifierNN1, eps=epsilon, targeted=targeted)
         if targeted:
-            # attacco targeted
+            # Attacco targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)
         else:
-            # attacco untargeted
+            # Attacco untargeted:
             return attack.generate(images)    
 
 # Classe per la gestione dell'attacco BIM (Basic Iterative Method)
@@ -38,11 +38,11 @@ class BIM(AdversarialAttack):
     def generate_images(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = BasicIterativeMethod(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
         if targeted:
-            # attacco targeted
+            # Attacco targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)
         else:
-            # attacco untargeted
+            # Attacco untargeted:
             return attack.generate(images)    
 
 # Classe per la gestione dell'attacco PGD (Projected Gradient Descent)
@@ -53,11 +53,11 @@ class PGD(AdversarialAttack):
     def generate_images(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
         attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
         if targeted:
-            # attacco targeted
+            # Attacco targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)
         else:
-            # attacco untargeted
+            # Attacco untargeted:
             return attack.generate(images)
 
 # Classe per la gestione dell'attacco DF (DeepFool)
@@ -66,9 +66,9 @@ class DF(AdversarialAttack):
         super().__init__(classifierNN1)
 
     def generate_images(self, images, epsilon, nb_grads, max_iter):
-        # attacco untargeted (la libreria ART non supporta l'attacco DeepFool targeted)
+        # Attacco untargeted (la libreria ART non supporta l'attacco DeepFool targeted):
         attack = DeepFool(classifier=self.classifierNN1, epsilon=epsilon, nb_grads=nb_grads, max_iter=max_iter, verbose=False)
-        # Per motivi di efficienza viene processata un'immagine alla volta
+        # Per motivi di efficienza viene processata un'immagine alla volta:
         test_images_adv = []
         batch_dim = 1
         for j in tqdm(range (0, len(images), batch_dim), desc="DeepFool"):
@@ -85,9 +85,9 @@ class CW(AdversarialAttack):
     def generate_images(self, images, confidence, learning_rate, max_iter, targeted=False, targeted_labels=None):
         attack = CarliniLInfMethod(classifier=self.classifierNN1, confidence=confidence, learning_rate=learning_rate, max_iter=max_iter, initial_const=0.1, targeted=targeted)
         if targeted:
-            # attacco targeted
+            # Attacco targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()
             return attack.generate(images, one_hot_targeted_labels)
         else:
-            # attacco untargeted
+            # Attacco untargeted:
             return attack.generate(images)

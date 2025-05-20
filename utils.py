@@ -1,138 +1,23 @@
 import os
 import numpy as np
-from sklearn.metrics import accuracy_score, roc_curve, auc
+import torch
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 from scipy.special import softmax
-from PIL import Image
 from nets import setup_detector_classifier
 from art.defences.detector.evasion import BinaryInputDetector
-import torch
-
-# calcola la massima perturbazione introdotta tra immagini originali e adv 
-def compute_max_perturbation(test_images, test_images_adv, show=False):
-    show_distribution = False
-    if show_distribution:
-        max_pert_sample = np.max(np.abs(test_images_adv - test_images), axis=(1, 2, 3))
-        
-        plt.figure(figsize=(6, 4))
-        plt.hist(max_pert_sample, bins=50, color='blue', alpha=0.7)
-        plt.title('Distribuzione delle max perturbations')
-        plt.xlabel('Max perturbation')
-        plt.ylabel('Frequenza')
-        plt.grid(True)
-        plt.show()
-        
-    if show:
-        print(f"clean test images shape: {test_images.shape} \tadversarial test images shape: {test_images_adv.shape}")
-        for i in range(1000):
-            max_pert = np.max(np.abs(test_images_adv[i] - test_images[i]))
-            test_image = (test_images[i] + 1)/2.0
-            test_image_adv = (test_images_adv[i] + 1)/2.0
-
-            if max_pert > 0.5:
-                fig, axes = plt.subplots(1, 2, figsize=(6, 3))
-                fig.suptitle(f'{i} Max perturbation: {max_pert:.4f}', fontsize=12)
-
-                axes[0].imshow(np.transpose(test_image, (1, 2, 0)))
-                axes[0].set_title('Original')
-                axes[0].axis('off')
-
-                axes[1].imshow(np.transpose(test_image_adv, (1, 2, 0)))
-                axes[1].set_title('Adversarial')
-                axes[1].axis('off')
-
-                plt.tight_layout()
-                plt.subplots_adjust(top=0.85)  # per non sovrapporre il titolo con i subplot
-                plt.show()
-    return np.max(np.abs(test_images_adv - test_images))
-
-# calcola l'accuratezza del classificatore confrontando le predizioni con le etichette reali 
-def compute_accuracy(classifier, x_test, y_test):
-    # Predizioni del modello (output con le probabilità per ogni classe)
-    y_pred = classifier.predict(x_test)  # Shape: (N, 8631)
-
-    # Convertiamo da probabilità a etichette (argmax sulle colonne)
-    y_pred_labels = np.argmax(y_pred, axis=1)  # Predizioni finali
-
-    # Calcoliamo l'accuratezza
-    accuracy = accuracy_score(y_pred_labels, y_test)
-    return accuracy 
-
-
-def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False, verbose=True):
-    """
-    Calcola l'accuracy penalizzando i falsi positivi dei detector.
-    - classifier: il classificatore (con metodo predict).
-    - x_test, y_test: dati NON adversariali.
-    - y_adv: etichette per i campioni avversari (True/False).
-    - detectors: dict di detector ART.
-    - threshold: soglia per considerare un campione come avversario.
-    Ritorna: (accuracy_effettiva, n_samples_utili, n_falsi_positivi)
-    """
-    # Maschera di campioni rifiutati da almeno un detector
-    rejected_mask = np.zeros(x_test.shape[0], dtype=bool)
-
-    for name, detector in detectors.items():
-        report, _ = detector.detect(x_test)
-        logits = np.array(report["predictions"])  # shape (n_samples, 2)
-        probs = softmax(logits, axis=1)
-        adversarial_probs = probs[:, 1]
-        is_adversarial = adversarial_probs > threshold # True se avversario; False se pulito
-        rejected_mask = np.logical_or(is_adversarial, rejected_mask)  # Un campione è scartato se almeno un detector lo scarta
-        detection_error = np.logical_xor(is_adversarial, y_adv)
-        if verbose:
-            print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni (soglia={threshold}).")
-            print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni (soglia={threshold}).")
-            print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni (soglia={threshold}).")
-
-    accepted_mask = np.logical_not(rejected_mask)  # Inverti la maschera: True se accettato, False se scartato
-    
-    # Campioni accettati = quelli che passeranno al classificatore
-    x_pass = x_test[accepted_mask]
-    y_pass = y_test[accepted_mask]
-
-    if isinstance(y_pass, torch.Tensor):
-        y_pass = y_pass.cpu().numpy()
-
-    # Predizioni del classificatore
-    if x_pass.shape[0] > 0:
-        y_pred = classifier.predict(x_pass)
-        y_pred_labels = np.argmax(y_pred, axis=1)
-        n_correct = np.sum(y_pred_labels == y_pass)  # campioni correttamente classificati
-    else:
-        n_correct = 0
-        if verbose:
-            print("Nessun campione accettato dai detector.")
-    
-    is_adversarial = ~accepted_mask  # Campioni avversari: quelli scartati dai detector
-
-    # Falsi positivi: campioni puliti scartati dai detector (0,1)
-    n_fp = np.sum(np.logical_and(is_adversarial, ~y_adv))
-    
-    # Campioni correttamente scartati (1,1)
-    n_correct_discarded = np.sum(np.logical_and(is_adversarial, y_adv)) # Veri positivi
-    
-    # Accuracy: corrette / totale originario (quindi penalizza falsi positivi)
-    n_total = y_test.shape[0]
-    if targeted:
-        accuracy = n_correct/n_total # I campioni scartati non vengono considerati perchè l'attacco non è andato a buon fine
-    else:    
-        accuracy = (n_correct + n_correct_discarded) / n_total
-
-    return accuracy, n_fp
 
 # carica e restituisce un dizionario di detector ART salvati in locale 
 def load_detectors(attack_types, device):
     detectors = {}
     for attack_type in attack_types:
-            model_path = os.path.join("./models", f"{attack_type}_detector.pth")
-            detector_classifier = setup_detector_classifier(device)
-            detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
-            detector_classifier.model.eval()
-            detectors[attack_type] = BinaryInputDetector(detector_classifier)
-            print(f"Detector caricato da: {model_path}")
+        model_path = os.path.join("./models", f"{attack_type}_detector.pth")
+        detector_classifier = setup_detector_classifier(device)
+        detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
+        detector_classifier.model.eval()
+        detectors[attack_type] = BinaryInputDetector(detector_classifier)
+        print(f"Detector caricato da: {model_path}")
     return detectors
-
 
 # Funzione per processare le immagini dalla rete NN1 alla rete NN2
 def process_images(images):
@@ -148,19 +33,6 @@ def process_images(images):
     # restituisce immagini pronte per la seconda rete
     return np.stack(processed_images, axis=0)
 
-
-def show_image(img, title=""):
-    img = (img + 1) / 2.0  # normalizza da [-1, 1] a [0, 1]
-    img = np.transpose(img, (1, 2, 0))  # da (C, H, W) a (H, W, C)
-
-    fig, ax = plt.subplots()
-    ax.imshow(img)
-    ax.set_title(title)
-    ax.axis('off')
-
-    # Mostra la finestra e aspetta che venga chiusa
-    plt.show(block=True)
-
 # salva un array di immagini in un file '.npy' in una cartella specifica
 def save_images_as_npy(images, filename, save_dir):
     os.makedirs(save_dir, exist_ok=True)
@@ -168,8 +40,7 @@ def save_images_as_npy(images, filename, save_dir):
     filepath = os.path.join(save_dir, f"{filename}.npy")
     np.save(filepath, images)  # salva l'intero array di immagini in un unico file
 
-
-def load_images_from_npy_folder(folder_path):
+def load_images_from_npy(folder_path):
     # Trova tutti i file .npy nella cartella
     files = [f for f in os.listdir(folder_path) if f.endswith('.npy')]
     if not files:
@@ -182,16 +53,3 @@ def load_images_from_npy_folder(folder_path):
         images_list.append(images_array)
 
     return images_list
-
-# carica e mostra sequenzialmente tutte le immagini contenute nel primo '.npy' della cartella
-def show_images_from_npy_folder(folder_path):
-    images = load_images_from_npy_folder(folder_path)
-
-    image_set = images[0]  # shape: (1000, 3, 224, 224)
-
-    for i, img in enumerate(image_set):
-        show_image(img, f'Immagine {i+1}/{len(image_set)}')
-    
-
-if __name__ == "__main__":
-    show_images_from_npy_folder("./dataset/test_set/adversarial_examples/df/plot1")

@@ -3,8 +3,7 @@ import os
 import torch
 import matplotlib.pyplot as plt
 from utils import *
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import *
 from test_set import get_test_set
 
 def get_adversarial_images(images_dir, num_samples):
@@ -32,21 +31,23 @@ def get_adversarial_images(images_dir, num_samples):
 
 def main():
     np.random.seed(33)
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     NUM_SAMPLES_ADVERSARIAL = 1000 # numero di campioni adversarial da inserire nel test set (1000 come i campioni clean)
+    
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
 
     # Caricamento dei detectors
     detectors = load_detectors(attack_types, device)
 
-    # Caricamento delle immagini clean e delle rispettive etichette per il test set
+    # Caricamento delle immagini clean (e delle rispettive etichette) del test set
     clean_images, _ = get_test_set().get_images()
     clean_labels = np.zeros(len(clean_images), dtype=bool)
     
     for attack_type in attack_types:
-        # Caricamento delle immagini adversarial per il test set:
+        # Caricamento delle immagini adversarial del test set:
         images_dir = "./dataset/test_set/adversarial_examples/" + attack_type
         if attack_type == "df": # nel test set per il detector di DeepFool vengono usati 1000 campioni adversarial untargeted:
             images_dir1 = images_dir + "/untargeted/samples_plot1"
@@ -94,9 +95,9 @@ def main():
         plt.savefig(plot_dir + "/Confusion_Matrix.png")
 
         # Creazione e salvataggio della curva ROC
-        logits = np.array(report["predictions"])
-        probs = softmax(logits, axis=1) # contiene le probabilità delle classe "clean" e "adversarial"
-        probs_adv = probs[:, 1] # contiene solo le probabilità delle classe "adversarial"
+        logits = np.array(report["predictions"]) # contiene i logits delle classi "clean" e "adversarial"
+        probs = softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
+        probs_adv = probs[:, 1] # contiene solo le probabilità delle classi "adversarial"
         false_positive_rate, true_positive_rate, _ = roc_curve(y_true, probs_adv)
         roc_auc = auc(false_positive_rate, true_positive_rate)
         plt.figure()

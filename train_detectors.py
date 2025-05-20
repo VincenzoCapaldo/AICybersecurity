@@ -28,7 +28,7 @@ def main():
         
         # Lettura del train set (adversarial) dei detectors:
         training_set_path = os.path.join("./dataset/detectors_train_set/adversarial_examples/", attack_type)
-        train_images_adv = load_images_from_npy_folder(training_set_path)
+        train_images_adv = load_images_from_npy(training_set_path)
         train_images_adv = np.concatenate(train_images_adv, axis=0)
         
         # Concatenazione delle immagini clean e adversarial:

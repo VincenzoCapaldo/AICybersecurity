@@ -1,16 +1,94 @@
 import os
-from matplotlib import pyplot as plt
 import torch
+import argparse
+from matplotlib import pyplot as plt
+from nets import setup_classifierNN1, setup_classifierNN2
+from utils import *
 from attacks import  FGSM, BIM, PGD, DF, CW
+from test_set import get_test_set
 from utils import *
 
-# Funzione per disegnare la security evaluation curve:
-# accuracy e targeted accuracy al variare di un parametro specifico dell'attacco (x) e della perturbazione massima
+NUM_CLASSES = 8631 # numero di classi nel dataset VGGFace2
+
+# Funzione che calcola la perturbazione massima tra le immagini originali e le immagini adversarial
+def compute_max_perturbation(test_images, test_images_adv, show_distribution=False):
+    # Mostra l'istogramma della perturbazione massima:
+    if show_distribution:
+        max_pert_sample = np.max(np.abs(test_images_adv - test_images), axis=(1, 2, 3))
+        plt.figure(figsize=(6, 4))
+        plt.hist(max_pert_sample, bins=50, color='blue', alpha=0.7)
+        plt.title('Distribuzione delle max perturbations')
+        plt.xlabel('Max perturbation')
+        plt.ylabel('Frequenza')
+        plt.grid(True)
+        plt.show()
+
+    # Ritorna la perturbazione massima:
+    return np.max(np.abs(test_images_adv - test_images))
+
+
+# Funzione che calcola l'accuratezza del classificatore sui campioni x_test (y_test contiene le classi vere)
+def compute_accuracy(classifier, x_test, y_test):
+    # Predizione del classificatore
+    probs = classifier.predict(x_test) # contiene la probabilità per ogni classe
+    y_pred = np.argmax(probs, axis=1) # contiene la classe con maggiore probabilità
+
+    # Calcolo dell'accuracy
+    accuracy = accuracy_score(y_pred, y_test)
+    return accuracy 
+
+
+# Funzione che calcola l'accuratezza del classificatore + detectors sui campioni x_test (y_test contiene le classi vere e y_adv se i campioni sono clean o adversarial) 
+def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors, threshold=0.5, targeted=False):
+    # Calcolo dei campioni rifiutati (0 se accettati da tutti i classificatori, 1 se rifiutati da almeno un classificatore)
+    rejected_samples = np.zeros(x_test.shape[0], dtype=bool) # inizialmente i campioni sono tutti accettati
+    for name, detector in detectors.items(): # per ogni detector
+        report, _ = detector.detect(x_test) # chiamata al detector
+        logits = np.array(report["predictions"]) # contiene i logits delle classi "clean" e "adversarial"
+        probs = softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
+        probs_adv = probs[:, 1] # contiene solo le probabilità delle classi "adversarial"
+        is_adversarial = probs_adv > threshold # controlla se i campioni sono adversarial
+        detection_error = np.sum(is_adversarial != y_adv) # conta il numero di errori del detectors
+        rejected_samples = np.logical_or(is_adversarial, rejected_samples) # i detectors vengono messi in or
+        print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni.")
+        print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni.")
+        print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni.")
+        
+    # Calcolo dei campioni accettati (1 se accettati da tutti i classificatori, 0 se rifiutati da almeno un classificatore)
+    accepted_samples = np.logical_not(rejected_samples)
+    x_accepted = x_test[accepted_samples]
+    y_accepted = y_test[accepted_samples]
+    if isinstance(y_accepted, torch.Tensor):
+        y_accepted = y_accepted.cpu().numpy()
+
+    # I campioni accettati vengono dati al classificatore per essere classificati
+    if x_accepted.shape[0] > 0:
+        probs = classifier.predict(x_accepted) # contiene la probabilità per ogni classe
+        y_pred = np.argmax(probs, axis=1) # contiene la classe con maggiore probabilità
+        correctly_classified = np.sum(y_pred == y_accepted) # campioni correttamente classificati
+    else:
+        correctly_classified = 0
+        print("Nessun campione è stato accettato dai detector.")
+
+    # Calcolo del numero di campioni correttamente rilevati (true positive)
+    correctly_detected = np.sum(np.logical_and(rejected_samples, y_adv))
+    
+    # Calcolo dell'accuracy o della targeted_accuracy (il parametro targeted indica quale delle due calcolare)
+    num_samples = y_test.shape[0]
+    if targeted:
+        targeted_accuracy = correctly_classified / num_samples # i campioni correctly_detected non vengono considerati perchè in tal caso l'attacco non è andato a buon fine
+        return targeted_accuracy
+    else:    
+        accuracy = (correctly_classified + correctly_detected) / num_samples # i campioni correctly_detected vengono considerati correttamente classificati
+        return accuracy
+
+
+# Funzione per disegnare la security evaluation curve: accuracy e targeted accuracy al variare di x (un parametro specifico dell'attacco) e della perturbazione massima
 def plot_curve(title, x_title, x, max_perturbation, accuracies, security_evaluation_curve_dir, targeted=False, targeted_accuracies=None):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     fig.suptitle(title, fontsize=16)
 
-    # Accuracy e Targeted Accuracy vs un parametro specifico dell'attacco (x)
+    # Accuracy e Targeted Accuracy vs x (un parametro specifico dell'attacco)
     axes[0].plot(x, accuracies, marker='o', linestyle='-', color='b')
     if targeted:
         axes[0].plot(x, targeted_accuracies, marker='o', linestyle='-', color='r')
@@ -40,10 +118,10 @@ def plot_curve(title, x_title, x, max_perturbation, accuracies, security_evaluat
 
 
 # Funziona che genera i campioni adversarial FGSM (se generate_samples=True) e la relativa security evaluation curve.
-def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
+def run_fgsm(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
     attack_dir = "fgsm/targeted/" if targeted else "fgsm/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir + "samples_plot1"
-    security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir + "samples_plot1"
+    security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir + "plot1"
 
     if targeted:
         targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
@@ -63,7 +141,7 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
 
     # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
     if generate_samples:
-        attack = FGSM(classifier)
+        attack = FGSM(setup_classifierNN1(device))
         i=0
         for epsilon in plot["epsilon_values"]:
             imgs_adv = attack.generate_images(clean_images, epsilon, targeted, targeted_labels)
@@ -72,7 +150,7 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
         print("Test adversarial examples generated and saved successfully for fgsm.")
     
     # Caricamento dei campioni adversarial
-    list_imgs_adv = load_images_from_npy_folder(test_set_adversarial_dir)
+    list_imgs_adv = load_images_from_npy(test_set_adversarial_dir)
     
     # Aggiunta delle performance sui dati clean
     x_axis_value = [0.0] + plot["epsilon_values"]
@@ -92,9 +170,9 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
                 targeted_accuracies.append(compute_accuracy(classifier, imgs_adv, targeted_labels))
         else:
             adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-            accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+            accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
             if targeted:
-                targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True)[0])
+                targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True))
     if targeted:
         plot_curve(plot["title_targeted"], plot["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, targeted_accuracies)
     else:
@@ -102,7 +180,7 @@ def run_fgsm(classifier, name, test_set, accuracy_clean, detectors=None, targete
 
 
 # Funziona che genera i campioni adversarial BIM (se generate_samples=True) e la relativa security evaluation curve.
-def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
+def run_bim(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
     attack_dir = "bim/targeted/" if targeted else "bim/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -151,7 +229,7 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = BIM(classifier)
+            attack = BIM(setup_classifierNN1(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -162,7 +240,7 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             print("Test adversarial examples generated and saved successfully for bim.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        list_imgs_adv = load_images_from_npy(test_set_adv_dir)
         
         # Aggiunta delle performance sui dati clean
         if plot_name=="plot1":
@@ -187,9 +265,9 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                     targeted_accuracies.append(compute_accuracy(classifier, imgs_adv, targeted_labels))
             else:
                 adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
                 if targeted:
-                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True)[0])
+                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True))
         if targeted:
             plot_curve(plot_data["title_targeted"], plot_data["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, targeted_accuracies)
         else:
@@ -197,7 +275,7 @@ def run_bim(classifier, name, test_set, accuracy_clean, detectors=None, targeted
 
 
 # Funziona che genera i campioni adversarial PGD (se generate_samples=True) e la relativa security evaluation curve.
-def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
+def run_pgd(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
     attack_dir = "pgd/targeted/" if targeted else "pgd/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -246,7 +324,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = PGD(classifier)
+            attack = PGD(setup_classifierNN1(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -257,7 +335,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
             print("Test adversarial examples generated and saved successfully for pgd.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        list_imgs_adv = load_images_from_npy(test_set_adv_dir)
     
         # Aggiunta delle performance sui dati clean
         if plot_name=="plot1":
@@ -282,9 +360,9 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
                     targeted_accuracies.append(compute_accuracy(classifier, imgs_adv, targeted_labels))
             else:
                 adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
                 if targeted:
-                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True)[0])
+                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True))
         if targeted:
             plot_curve(plot_data["title_targeted"], plot_data["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, targeted_accuracies)
         else:
@@ -292,7 +370,7 @@ def run_pgd(classifier, name, test_set, accuracy_clean, detectors=None, targeted
         
 
 # Funziona che genera i campioni adversarial DF (se generate_samples=True) e la relativa security evaluation curve.
-def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_samples=False):
+def run_df(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean):
     attack_dir = "df/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -333,7 +411,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = DF(classifier)
+            attack = DF(setup_classifierNN1(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for nb_grads in plot_data["nb_grads_values"]:
@@ -344,7 +422,7 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
             print("Test adversarial examples generated and saved successfully for df.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        list_imgs_adv = load_images_from_npy(test_set_adv_dir)
 
         # Aggiunta delle performance sui dati clean
         if plot_name=="plot1":
@@ -365,12 +443,12 @@ def run_df(classifier, name, test_set, accuracy_clean, detectors=None, generate_
                 accuracies.append(compute_accuracy(classifier, imgs_adv, clean_labels))
             else:
                 adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
         plot_curve(plot_data["title_untargeted"], plot_data["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir)
        
 
 # Funziona che genera i campioni adversarial CW (se generate_samples=True) e la relativa security evaluation curve.
-def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=False, target_class=None, targeted_accuracy_clean=None, generate_samples=False):
+def run_cw(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
     attack_dir = "cw/targeted/" if targeted else "cw/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -419,7 +497,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = CW(classifier)
+            attack = CW(setup_classifierNN1(device))
             i=0
             for confidence in plot_data["confidence_values"]:
                 for learning_rate in plot_data["learning_rate_values"]:
@@ -430,7 +508,7 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
             print("Test adversarial examples generated and saved successfully for cw.")
         
         # Caricamento dei campioni adversarial
-        list_imgs_adv = load_images_from_npy_folder(test_set_adv_dir)
+        list_imgs_adv = load_images_from_npy(test_set_adv_dir)
     
         # Aggiunta delle performance sui dati clean
         if plot_name=="plot1":
@@ -455,10 +533,86 @@ def run_cw(classifier, name, test_set, accuracy_clean, detectors=None, targeted=
                     targeted_accuracies.append(compute_accuracy(classifier, imgs_adv, targeted_labels))
             else:
                 adv_flag = np.ones(len(imgs_adv), dtype=bool) # i campioni da valutare sono adversarial
-                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False)[0])
+                accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, clean_labels, adv_flag, detectors, targeted=False))
                 if targeted:
-                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True)[0])
+                    targeted_accuracies.append(compute_accuracy_with_detectors(classifier, imgs_adv, targeted_labels, adv_flag, detectors, targeted=True))
         if targeted:
             plot_curve(plot_data["title_targeted"], plot_data["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, targeted_accuracies)
         else:
             plot_curve(plot_data["title_untargeted"], plot_data["x_axis_name"], x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
+    parser.add_argument('--generate_samples', type=bool, default=False, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
+    args = parser.parse_args()
+    
+    classifier_name = args.classifier_name
+    generate_samples = args.generate_samples
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+
+    # Caricamento delle immagini clean (e delle rispettive etichette) del test set
+    test_set = get_test_set()
+    clean_images, clean_labels = test_set.get_images()
+
+    # Setup del classificatore da testare
+    if classifier_name == "NN2":
+        classifier = setup_classifierNN2(device)
+        clean_images = process_images(clean_images) # preprocessing delle immagini per il secondo classificatore
+    else: # "NN1" o "NN1 + detectors"
+        classifier = setup_classifierNN1(device)
+        
+    # Valutazione delle performance sui campioni clean
+    if classifier_name == "NN1 + detectors":
+        # Caricamento dei detectors:
+        detectors = load_detectors(attack_types, device)
+        # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere:
+        adv_labels = np.zeros(clean_images.shape[0], dtype=bool) # i campioni da valutare sono clean
+        accuracy_clean, _ = compute_accuracy_with_detectors(classifier, clean_images, clean_labels, adv_labels, detectors, targeted=False)
+        print(f"Accuracy del classificatore {classifier_name} su dati clean: {accuracy_clean:.3f}")
+        # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target:
+        target_class_label = "Cristiano_Ronaldo"
+        target_class = test_set.get_true_label(target_class_label)
+        targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+        targeted_accuracy_clean, _ = compute_accuracy_with_detectors(classifier, clean_images, targeted_labels, adv_labels, detectors, targeted=True)
+        print(f"Targeted accuracy del classificatore {classifier_name} su dati clean: {targeted_accuracy_clean:.3f}")
+    else: # "NN1" o "NN2"
+        detectors = None # non ci sono detectors
+        # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere:
+        accuracy_clean = compute_accuracy(classifier, clean_images, clean_labels)
+        print(f"Accuracy del classificatore {classifier_name} su dati clean: {accuracy_clean:.3f}")
+        # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target:
+        target_class_label = "Cristiano_Ronaldo"
+        target_class = test_set.get_true_label(target_class_label)
+        targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+        targeted_accuracy_clean = compute_accuracy(classifier, clean_images, targeted_labels)
+        print(f"Targeted accuracy del classificatore {classifier_name} su dati clean: {targeted_accuracy_clean:.3f}")
+
+    # Valutazione delle performance sui campioni adversarial (security evaluation curve)
+    # Attacchi untargeted:
+    if "fgsm" in attack_types:
+        run_fgsm(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean)
+    if "bim" in attack_types:
+        run_bim(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean)
+    if "pgd" in attack_types:
+        run_pgd(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean)
+    if "df" in attack_types:
+        run_df(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean)
+    if "cw" in attack_types:
+        run_cw(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean)
+    # Attacchi targeted:
+    if "fgsm" in attack_types:
+        run_fgsm(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean, True, target_class, targeted_accuracy_clean)
+    if "bim" in attack_types:
+        run_bim(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean, True, target_class, targeted_accuracy_clean)
+    if "pgd" in attack_types:
+        run_pgd(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean, True, target_class, targeted_accuracy_clean)
+    if "cw" in attack_types:
+        run_cw(generate_samples, device, classifier_name, classifier, detectors, test_set, accuracy_clean, True, target_class, targeted_accuracy_clean)
+
+if __name__ == "__main__":
+    main()
