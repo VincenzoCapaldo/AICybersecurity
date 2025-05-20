@@ -167,7 +167,7 @@ def plot_curve(title, x_title, legend, x, max_perturbation, accuracies, security
 
 
 # Funziona che genera i campioni adversarial FGSM (se generate_samples=True) e la relativa security evaluation curve.
-def run_fgsm(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
+def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
     attack_dir = "fgsm/targeted/" if targeted else "fgsm/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir + "samples_plot1"
     security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir + "plot1"
@@ -224,7 +224,7 @@ def run_fgsm(generate_samples, device, name, classifier, detectors, test_set, ac
 
 
 # Funziona che genera i campioni adversarial BIM (se generate_samples=True) e la relativa security evaluation curve.
-def run_bim(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
+def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
     attack_dir = "bim/targeted/" if targeted else "bim/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -314,7 +314,7 @@ def run_bim(generate_samples, device, name, classifier, detectors, test_set, acc
         
 
 # Funziona che genera i campioni adversarial PGD (se generate_samples=True) e la relativa security evaluation curve.
-def run_pgd(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
+def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
     attack_dir = "pgd/targeted/" if targeted else "pgd/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -571,7 +571,7 @@ def run_cw(generate_samples, device, name, classifier, detectors, test_set, accu
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--classifier_name", type=str, default="NN2", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
+    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
     parser.add_argument('--generate_samples', type=bool, default=False, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
     args = parser.parse_args()
     
