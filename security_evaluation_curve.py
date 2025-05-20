@@ -1,8 +1,9 @@
 import os
+from sklearn.base import accuracy_score
 import torch
 import argparse
 from matplotlib import pyplot as plt
-from nets import setup_classifierNN1, setup_classifierNN2
+from nets import setup_NN1_classifier, setup_NN2_classifier
 from utils import *
 from attacks import  FGSM, BIM, PGD, DF, CW
 from test_set import get_test_set
@@ -45,7 +46,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     for name, detector in detectors.items(): # per ogni detector
         report, _ = detector.detect(x_test) # chiamata al detector
         logits = np.array(report["predictions"]) # contiene i logits delle classi "clean" e "adversarial"
-        probs = softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
+        probs = torch.softmax(logits, axis=1) # contiene le probabilità delle classi "clean" e "adversarial"
         probs_adv = probs[:, 1] # contiene solo le probabilità delle classi "adversarial"
         is_adversarial = probs_adv > threshold # controlla se i campioni sono adversarial
         detection_error = np.sum(is_adversarial != y_adv) # conta il numero di errori del detectors
@@ -190,7 +191,7 @@ def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_
 
     # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
     if generate_samples:
-        attack = FGSM(setup_classifierNN1(device))
+        attack = FGSM(setup_NN1_classifier(device))
         i=0
         for epsilon in plot["epsilon_values"]:
             imgs_adv = attack.generate_images(clean_images, epsilon, targeted, targeted_labels)
@@ -273,7 +274,7 @@ def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = BIM(setup_classifierNN1(device))
+            attack = BIM(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -363,7 +364,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = PGD(setup_classifierNN1(device))
+            attack = PGD(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -404,7 +405,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
         
 
 # Funziona che genera i campioni adversarial DF (se generate_samples=True) e la relativa security evaluation curve.
-def run_df(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean):
+def run_df(classifier, name, test_set, detectors=None, generate_samples=False):
     attack_dir = "df/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -445,7 +446,7 @@ def run_df(generate_samples, device, name, classifier, detectors, test_set, accu
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = DF(setup_classifierNN1(device))
+            attack = DF(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for nb_grads in plot_data["nb_grads_values"]:
@@ -480,7 +481,7 @@ def run_df(generate_samples, device, name, classifier, detectors, test_set, accu
        
 
 # Funziona che genera i campioni adversarial CW (se generate_samples=True) e la relativa security evaluation curve.
-def run_cw(generate_samples, device, name, classifier, detectors, test_set, accuracy_clean, targeted=False, target_class=None, targeted_accuracy_clean=None):
+def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
     attack_dir = "cw/targeted/" if targeted else "cw/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -529,7 +530,7 @@ def run_cw(generate_samples, device, name, classifier, detectors, test_set, accu
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = CW(setup_classifierNN1(device))
+            attack = CW(setup_NN1_classifier(device))
             i=0
             for confidence in plot_data["confidence_values"]:
                 for learning_rate in plot_data["learning_rate_values"]:
@@ -564,7 +565,7 @@ def run_cw(generate_samples, device, name, classifier, detectors, test_set, accu
         else: 
             legend = ["Accuracy NN1", "Accuracy NN1 + detectors", "Targeted Accuracy NN1", "Targeted Accuracy NN1 + detectors"]
         if targeted:
-            plot_curve(plot_data["title_targeted"], plot_data["x_axis_name"], legend, x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, global_targeted_accuracies)
+            plot_curve(plot_data["title_targeted"], plot_data["x_axis_name"], legend, x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir, targeted, targeted_accuracies)
         else:
             plot_curve(plot_data["title_untargeted"], plot_data["x_axis_name"], legend, x_axis_value, max_perturbations, accuracies, security_evaluation_curve_dir)
         
@@ -588,10 +589,10 @@ def main():
     clean_images, clean_labels = test_set.get_images()
 
     # Setup della lista dei classificatori da testare: coppia (classificatore, flag preprocess)
-    classifiers = [[setup_classifierNN1(device), False]] # setup del primo classificatore
+    classifiers = [[setup_NN1_classifier(device), False]] # setup del primo classificatore
     detectors = None
     if classifier_name == "NN2":
-        classifiers.append([setup_classifierNN2(device), True]) # setup del secondo classificatore
+        classifiers.append([setup_NN2_classifier(device), True]) # setup del secondo classificatore
     elif classifier_name == "NN1 + detectors":
         detectors = load_detectors(attack_types, device) # caricamento dei detectors
         

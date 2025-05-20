@@ -9,7 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 from attacks import BIM, CW, DF, FGSM, PGD
-from nets import setup_classifierNN1
+from nets import setup_NN1_classifier
 from utils import save_images_as_npy
 
 NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     
     # Generazione del train set adversarial
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    classifier = setup_classifierNN1(device)
+    classifier = setup_NN1_classifier(device)
     train_images_clean = get_train_set().get_images()
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
     create_train_set_adv(classifier, train_images_clean, attack_types) # crea il train set adversarial

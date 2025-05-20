@@ -1,23 +1,5 @@
 import os
 import numpy as np
-import torch
-import matplotlib.pyplot as plt
-from sklearn.metrics import accuracy_score
-from scipy.special import softmax
-from nets import setup_detector_classifier
-from art.defences.detector.evasion import BinaryInputDetector
-
-# carica e restituisce un dizionario di detector ART salvati in locale 
-def load_detectors(attack_types, device):
-    detectors = {}
-    for attack_type in attack_types:
-        model_path = os.path.join("./models", f"{attack_type}_detector.pth")
-        detector_classifier = setup_detector_classifier(device)
-        detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
-        detector_classifier.model.eval()
-        detectors[attack_type] = BinaryInputDetector(detector_classifier)
-        print(f"Detector caricato da: {model_path}")
-    return detectors
 
 # Funzione per processare le immagini dalla rete NN1 alla rete NN2
 def process_images(images):
@@ -53,3 +35,15 @@ def load_images_from_npy(folder_path):
         images_list.append(images_array)
 
     return images_list
+
+# carica e restituisce un dizionario di detector ART salvati in locale 
+def load_detectors(attack_types, device):
+    detectors = {}
+    for attack_type in attack_types:
+        model_path = os.path.join("./models", f"{attack_type}_detector.pth")
+        detector_classifier = setup_detector_classifier(device)
+        detector_classifier.model.load_state_dict(torch.load(model_path, map_location=device))
+        detector_classifier.model.eval()
+        detectors[attack_type] = BinaryInputDetector(detector_classifier)
+        print(f"Detector caricato da: {model_path}")
+    return detectors

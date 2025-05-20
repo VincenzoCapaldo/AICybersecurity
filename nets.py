@@ -4,14 +4,14 @@ import torch
 import torch.nn as nn
 import math
 import torch.nn.functional as F
-from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1
 from torch.optim import Adam
 from art.estimators.classification import PyTorchClassifier
-from torch.utils.data import DataLoader, TensorDataset, random_split
-from tqdm import tqdm
+from facenet_pytorch.models.inception_resnet_v1 import InceptionResnetV1 # rete NN1
 
-NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
-
+#################################################################################################################################################
+# Codice per la rete NN2
+# https://github.com/cydonia999/VGGFace2-pytorch/blob/master/models/senet.py
+# https://github.com/cydonia999/VGGFace2-pytorch/blob/master/utils.py
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -68,7 +68,7 @@ class Bottleneck(nn.Module):
 
         # SENet
         compress_rate = 16
-        # self.se_block = SEModule(planes * 4, compress_rate)  # this is not used.
+        
         self.conv4 = nn.Conv2d(planes * 4, planes * 4 // compress_rate, kernel_size=1, stride=1, bias=True)
         self.conv5 = nn.Conv2d(planes * 4 // compress_rate, planes * 4, kernel_size=1, stride=1, bias=True)
         self.sigmoid = nn.Sigmoid()
@@ -93,17 +93,16 @@ class Bottleneck(nn.Module):
         out2 = self.relu(out2)
         out2 = self.conv5(out2)
         out2 = self.sigmoid(out2)
+        
 
         if self.downsample is not None:
             residual = self.downsample(x)
 
-        #out += residual
         out = out2 * out + residual
         out = self.relu(out)
-
         return out
 
-# Definizione del modello SENet
+
 class SENet(nn.Module):
 
     def __init__(self, block, layers, num_classes=1000, include_top=True):
@@ -111,13 +110,11 @@ class SENet(nn.Module):
         super(SENet, self).__init__()
         self.include_top = include_top
         
-        # Layer iniziali
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=0, ceil_mode=True)
 
-        # Blocchi principali
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
@@ -177,16 +174,17 @@ def senet50(**kwargs):
     return model
 
 
-def load_state_dict(model, model_path):
+
+def load_state_dict(model, fname):
     """
     Set parameters converted from Caffe models authors of VGGFace2 provide.
     See https://www.robots.ox.ac.uk/~vgg/data/vgg_face2/.
 
     Arguments:
         model: model
-        model_path: file name of parameters converted from a Caffe model, assuming the file format is Pickle.
+        fname: file name of parameters converted from a Caffe model, assuming the file format is Pickle.
     """
-    with open(model_path, 'rb') as f:
+    with open(fname, 'rb') as f:
         weights = pickle.load(f, encoding='latin1')
 
     own_state = model.state_dict()
@@ -200,26 +198,66 @@ def load_state_dict(model, model_path):
         else:
             raise KeyError('unexpected key "{}" in state_dict'.format(name))
 
-# funzione per caricare il modello InceptionResnetV1 (NN1)
-def get_NN1(device="cpu", classify=True):
-    NN1 = InceptionResnetV1(pretrained='vggface2').eval()
-    NN1.to(device)
-    NN1.classify = classify
-    print("Modello NN1 caricato correttamente")
-    return NN1
+#################################################################################################################################################
 
-# funzione per caricare il modello SENet (NN2)
-def get_NN2(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
-    if not os.path.exists('./models'):
-        os.makedirs('./models')
-    model = senet50(num_classes=8631, include_top=True)
-    load_state_dict(model,model_path)
+NUM_CLASSES = 8631  # numero di classi nel dataset VGGFace2
+
+### RETE NN1 ###
+
+# Funzione per caricare il modello InceptionResnetV1 (NN1)
+def get_NN1(device="cpu"):
+    model = InceptionResnetV1(pretrained='vggface2').eval()
     model.to(device)
-    model.eval()
-    print("Modello NN2 caricato correttamente da", model_path)
+    model.classify = True
+    print("Modello NN1 caricato correttamente.")
     return model
 
-# Rete per rilevare immagini avversarie (adv)
+# Setup del classificatore NN1
+def setup_NN1_classifier(device):
+    NN1 = get_NN1(device) # modello
+    NN1_classifier = PyTorchClassifier(
+        model=NN1,
+        loss=torch.nn.CrossEntropyLoss(),
+        optimizer=Adam(NN1.parameters(), lr=0.001),
+        input_shape=(3, 224, 224),
+        channels_first=True,
+        nb_classes=NUM_CLASSES,
+        clip_values=(-1.0, 1.0), # accetta valori compresi tra -1.0 e 1.0
+        device_type="gpu" if torch.cuda.is_available() else "cpu"
+    )
+    return NN1_classifier
+
+
+### RETE NN2 ###
+
+# Funzione per caricare il modello SENet (NN2)
+def get_NN2(device="cpu", model_path='./models/senet50_ft_weight.pkl'):
+    model = senet50(num_classes=NUM_CLASSES, include_top=True)
+    load_state_dict(model, model_path)
+    model.to(device)
+    model.eval()
+    print("Modello NN2 caricato correttamente.")
+    return model
+
+# Setup del classificatore NN2
+def setup_NN2_classifier(device):
+    NN2 = get_NN2(device) # modello
+    NN2_classifier = PyTorchClassifier(
+        model=NN2,
+        loss=torch.nn.CrossEntropyLoss(),
+        optimizer=Adam(NN2.parameters(), lr=0.001),
+        input_shape=(3, 224, 224),
+        channels_first=True,
+        nb_classes=NUM_CLASSES,
+        clip_values=(0.0, 255.0), # accetta valori compresi tra 0.0 e 255.0
+        device_type="gpu" if torch.cuda.is_available() else "cpu"
+    )
+    return NN2_classifier
+
+
+### RETE DETECTORS ###
+
+# Rete dei detectors usati per classificare le immagini come clean o adversarial
 class AdversarialDetector(nn.Module):
     def __init__(self, backbone):
         super().__init__()
@@ -228,147 +266,25 @@ class AdversarialDetector(nn.Module):
             nn.Flatten(),
             nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Linear(256, 2)  # output: [clean, adversarial]
+            nn.Linear(256, 2) # output: [clean, adversarial]
         )
 
     def forward(self, x):
-        feats = self.backbone(x)  # [B, 512, 1, 1]
-        feats = feats.view(feats.size(0), -1)
+        feats = self.backbone(x)
         return self.classifier(feats)
     
-    def fit(self, x_train, y_train, nb_epochs=40, batch_size=16, verbose=True,
-        lr=1e-4, device='cpu', patience=5):
-    
-        self.to(device)
-
-        # Split 80/20
-        dataset = TensorDataset(x_train, y_train)
-        total_size = len(dataset)
-        val_size = int(0.2 * total_size)
-        train_size = total_size - val_size
-        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-        
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-
-        criterion = nn.CrossEntropyLoss()
-        optimizer = Adam(self.parameters(), lr=lr)
-
-        best_val_loss = float('inf')
-        epochs_no_improve = 0
-        best_model_state = None
-
-        for epoch in tqdm(range(nb_epochs), desc="Epochs"):
-            self.train()
-            running_loss = 0.0
-
-            for inputs, labels in train_loader:
-                inputs, labels = inputs.to(device), labels.to(device)
-
-                optimizer.zero_grad()
-                outputs = self(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-
-                running_loss += loss.item() * inputs.size(0)
-
-            epoch_loss = running_loss / train_size
-
-            # === Validation ===
-            self.eval()
-            val_loss = 0.0
-            correct = 0
-            total = 0
-
-            with torch.no_grad():
-                for inputs, labels in val_loader:
-                    inputs, labels = inputs.to(device), labels.to(device)
-                    outputs = self(inputs)
-                    loss = criterion(outputs, labels)
-                    val_loss += loss.item() * inputs.size(0)
-
-                    preds = torch.argmax(outputs, dim=1)
-                    correct += (preds == labels).sum().item()
-                    total += labels.size(0)
-
-            val_loss /= val_size
-            val_acc = correct / total
-
-            if verbose:
-                print(f"Epoch {epoch+1}/{nb_epochs} - Train Loss: {epoch_loss:.4f} | Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
-
-            # === Early stopping ===
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-                best_model_state = self.state_dict()
-                epochs_no_improve = 0
-            else:
-                epochs_no_improve += 1
-                if epochs_no_improve >= patience:
-                    print(f"Early stopping at epoch {epoch+1}")
-                    break
-
-        # Ripristina il modello migliore
-        if best_model_state is not None:
-            self.load_state_dict(best_model_state)
-
-# Restituisce una rete detector, con backbone InceptionResNet
-def get_detector(device="cpu", finetune=False):
-
-    if finetune:
-        # Finetuning della rete
-        backbone = InceptionResnetV1(pretrained='vggface2', classify=False)
-    else:
-        # Addestra la rete da zero
-        backbone = InceptionResnetV1(classify=False)
-    
-    # Sblocca tutta la backbone
+# Funzione che crea e restituisce un detector
+def get_detector(device="cpu"):
+    backbone = InceptionResnetV1(classify=False) # i detectors utilizzano InceptionResnetV1 come backbone
     for param in backbone.parameters():
-        param.requires_grad = True
-    
+        param.requires_grad = True # rende tutti i parametri della backbone addestrabili
     detector = AdversarialDetector(backbone)
     detector.to(device)
     return detector
 
-# Setup per classificatore NN1
-def setup_classifierNN1(device, classify=True):
-    # Istanzio la rete
-    nn1 = get_NN1(device, classify)
-    # Definizione del classificatore
-    classifierNN1 = PyTorchClassifier(
-        model=nn1,
-        loss=torch.nn.CrossEntropyLoss(),
-        optimizer=Adam(nn1.parameters(), lr=0.001),
-        input_shape=(3, 224, 224),
-        channels_first=True,
-        nb_classes=NUM_CLASSES,
-        clip_values=(-1.0, 1.0),
-        device_type="gpu" if torch.cuda.is_available() else "cpu"
-    )
-    return classifierNN1
-
-# Setup per classificatore NN2
-def setup_classifierNN2(device):
-    # Istanzio la rete
-    nn2 = get_NN2(device)
-    classifierNN2 = PyTorchClassifier(
-        model=nn2,
-        loss=torch.nn.CrossEntropyLoss(),
-        optimizer=Adam(nn2.parameters(), lr=0.001),
-        input_shape=(3, 224, 224),
-        channels_first=True,
-        nb_classes=NUM_CLASSES,
-        clip_values=(0.0, 255.0),
-        device_type="gpu" if torch.cuda.is_available() else "cpu"
-    )
-    return classifierNN2
-
-# Setup per classificatore del detector
+# Setup del classificatore del detector
 def setup_detector_classifier(device):
-    # Istanzio la rete
     detector = get_detector(device)
-    # Definizione del classificatore
     classifier = PyTorchClassifier(
         model=detector,
         loss=torch.nn.CrossEntropyLoss(),
@@ -376,7 +292,7 @@ def setup_detector_classifier(device):
         input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=2,
-        clip_values=(-1.0, 1.0),
+        clip_values=(-1.0, 1.0), # accetta valori compresi tra -1.0 e 1.0
         device_type="gpu" if torch.cuda.is_available() else "cpu"
     )
     return classifier
