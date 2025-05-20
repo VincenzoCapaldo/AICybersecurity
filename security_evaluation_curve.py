@@ -572,13 +572,13 @@ def main():
         detectors = load_detectors(attack_types, device)
         # Calcolo dell'accuracy sulle immagini clean rispetto alle label vere:
         adv_labels = np.zeros(clean_images.shape[0], dtype=bool) # i campioni da valutare sono clean
-        accuracy_clean, _ = compute_accuracy_with_detectors(classifier, clean_images, clean_labels, adv_labels, detectors, targeted=False)
+        accuracy_clean  = compute_accuracy_with_detectors(classifier, clean_images, clean_labels, adv_labels, detectors, targeted=False)
         print(f"Accuracy del classificatore {classifier_name} su dati clean: {accuracy_clean:.3f}")
         # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target:
         target_class_label = "Cristiano_Ronaldo"
         target_class = test_set.get_true_label(target_class_label)
         targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
-        targeted_accuracy_clean, _ = compute_accuracy_with_detectors(classifier, clean_images, targeted_labels, adv_labels, detectors, targeted=True)
+        targeted_accuracy_clean = compute_accuracy_with_detectors(classifier, clean_images, targeted_labels, adv_labels, detectors, targeted=True)
         print(f"Targeted accuracy del classificatore {classifier_name} su dati clean: {targeted_accuracy_clean:.3f}")
     else: # "NN1" o "NN2"
         detectors = None # non ci sono detectors
