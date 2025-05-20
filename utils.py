@@ -1,5 +1,8 @@
 import os
 import numpy as np
+import torch
+from nets import setup_detector_classifier
+from art.defences.detector import BinaryInputDetector
 
 # Funzione per processare le immagini dalla rete NN1 alla rete NN2
 def process_images(images):

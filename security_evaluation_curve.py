@@ -191,7 +191,7 @@ def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_
 
     # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
     if generate_samples:
-        attack = FGSM(setup_NN1_classifier(device))
+        attack = FGSM(setup_NN1_classifier())
         i=0
         for epsilon in plot["epsilon_values"]:
             imgs_adv = attack.generate_images(clean_images, epsilon, targeted, targeted_labels)
@@ -274,7 +274,7 @@ def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = BIM(setup_NN1_classifier(device))
+            attack = BIM(setup_NN1_classifier())
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -364,7 +364,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = PGD(setup_NN1_classifier(device))
+            attack = PGD(setup_NN1_classifier())
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -446,7 +446,7 @@ def run_df(classifier, name, test_set, detectors=None, generate_samples=False):
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = DF(setup_NN1_classifier(device))
+            attack = DF(setup_NN1_classifier())
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for nb_grads in plot_data["nb_grads_values"]:
@@ -530,7 +530,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = CW(setup_NN1_classifier(device))
+            attack = CW(setup_NN1_classifier())
             i=0
             for confidence in plot_data["confidence_values"]:
                 for learning_rate in plot_data["learning_rate_values"]:
