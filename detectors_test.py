@@ -111,7 +111,7 @@ def main():
         plt.ylabel('True Positive Rate')
         plt.title(f"ROC Curve - {attack_type.upper()} Detector")
         plt.legend(loc='lower right')
-        plt.savefig(plot_dir + "/ROC Curve.png")
+        plt.savefig(plot_dir + "/ROC_Curve.png")
 
 if __name__ == "__main__":
     main()
