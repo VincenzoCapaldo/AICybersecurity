@@ -51,9 +51,6 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
         is_adversarial = probs_adv > threshold # controlla se i campioni sono adversarial
         detection_error = np.sum(is_adversarial != y_adv) # conta il numero di errori del detectors
         rejected_samples = np.logical_or(is_adversarial, rejected_samples) # i detectors vengono messi in or
-        #print(f"Detector {name} ha scartato {np.sum(is_adversarial)} campioni.")
-        #print(f"Detector {name} ha rilevato correttamente {x_test.shape[0] - np.sum(detection_error)} campioni.")
-        #print(f"Detector {name} ha rilevato erroneamente {np.sum(detection_error)} campioni.")
         
     # Calcolo dei campioni accettati (1 se accettati da tutti i classificatori, 0 se rifiutati da almeno un classificatore)
     accepted_samples = np.logical_not(rejected_samples)
@@ -574,7 +571,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--classifier_name", type=str, default="NN1 + detectors", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
+    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
     parser.add_argument('--generate_samples', type=bool, default=False, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
     args = parser.parse_args()
     
