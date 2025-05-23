@@ -37,7 +37,7 @@ def load_detectors(attack_types, device):
 # Funzione per processare le immagini da dare in input alla rete NN2
 def process_images(images):
     processed_images = [] # lista di immagni processate
-    mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1, 1)
+    mean_bgr = np.array([91.4953, 103.8827, 131.0912]).reshape(3, 1, 1) # valori medi dei 3 canali sul dataset VGGFace2
     
     for image in images:
         image = (image + 1.0)  * (255.0 / 2) # float32 [-1.0, 1.0] -> [0.0, 255.0]
