@@ -221,7 +221,7 @@ def setup_NN1_classifier(device):
         input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=NUM_CLASSES,
-        clip_values=(-1.0, 1.0), # accetta valori compresi tra -1.0 e 1.0
+        clip_values=(-1.0, 1.0),
         device_type="gpu" if torch.cuda.is_available() else "cpu"
     )
     return NN1_classifier
@@ -248,7 +248,6 @@ def setup_NN2_classifier(device):
         input_shape=(3, 224, 224),
         channels_first=True,
         nb_classes=NUM_CLASSES,
-        clip_values=(0.0, 255.0), # accetta valori compresi tra 0.0 e 255.0
         device_type="gpu" if torch.cuda.is_available() else "cpu"
     )
     return NN2_classifier
