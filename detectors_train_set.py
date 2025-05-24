@@ -95,10 +95,10 @@ class TrainSet(Dataset):
         train_images = np.concatenate(train_images, axis=0)
         return train_images
 
-# Funzione per la generazione del train set (adversarial) dei detectors.
-def create_random_train_set_adv(classifier, images, attack_types):
+# Funzione per creare il train set (adversarial) per i detectors (randomicamente).
+def create_train_set_adv(classifier, images, attack_types):
     num_images = images.shape[0]
-    untargeted_images = num_images // 2  # 50% delle immagini saranno untargeted
+    untargeted_images = num_images // 2
     for attack_name in attack_types:
         # Generazione campioni adversarial fgsm al variare di epsilon (50% targeted e 50% untargeted):
         if attack_name == "fgsm":
@@ -106,7 +106,7 @@ def create_random_train_set_adv(classifier, images, attack_types):
             all_adv_images = []
             save_dir = "./dataset/detectors_train_set/adversarial_examples/fgsm"
             for i in range(0, untargeted_images):
-                eps = random.uniform(1e-6, 0.1)  # 0 escluso, 0.1 incluso
+                eps = random.uniform(0.01, 0.1)  # 0 escluso, 0.1 incluso
                 all_adv_images.append(attack.generate_images(images[i:i+1], eps))
             for j in range(num_images - untargeted_images):
                 targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(num_images-untargeted_images,))
@@ -120,7 +120,7 @@ def create_random_train_set_adv(classifier, images, attack_types):
             all_adv_images = []
             save_dir = "./dataset/detectors_train_set/adversarial_examples/bim"
             for i in range(0, untargeted_images):
-                eps = random.uniform(1e-6, 0.1)  # 0 escluso, 0.1 incluso
+                eps = random.uniform(0.01, 0.1)  # 0 escluso, 0.1 incluso
                 all_adv_images.append(attack.generate_images(images[i:i+1], eps, epsilon_step=0.01, max_iter=10))
             for j in range(num_images - untargeted_images):
                 targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(num_images-untargeted_images,))
@@ -133,7 +133,7 @@ def create_random_train_set_adv(classifier, images, attack_types):
             attack = PGD(classifier)
             save_dir = "./dataset/detectors_train_set/adversarial_examples/pgd"
             for i in range(0, untargeted_images):
-                eps = random.uniform(1e-6, 0.1)  # 0 escluso, 0.1 incluso
+                eps = random.uniform(0.01, 0.1)  # 0 escluso, 0.1 incluso
                 all_adv_images.append(attack.generate_images(images[i:i+1], eps, epsilon_step=0.01, max_iter=10))
             for j in range(num_images - untargeted_images):    
                 targeted_labels = torch.randint(low=0, high=NUM_CLASSES-1, size=(num_images-untargeted_images,))
@@ -181,4 +181,4 @@ if __name__ == "__main__":
     classifier = setup_NN1_classifier(device)
     train_images_clean = get_train_set().get_images()
     attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
-    create_random_train_set_adv(classifier, train_images_clean, attack_types) # crea il train set adversarial
+    create_train_set_adv(classifier, train_images_clean, attack_types) # crea il train set adversarial
