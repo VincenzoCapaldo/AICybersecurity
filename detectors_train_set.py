@@ -148,7 +148,7 @@ def create_train_set_adv(classifier, images, attack_types):
             attack = DF(classifier)
             all_adv_images = []
             save_dir = "./dataset/detectors_train_set/adversarial_examples/df"
-            for i in tqdm(range(0, untargeted_images), desc = "Generating adversarial examples"):
+            for i in tqdm(range(0, num_images), desc = "Generating adversarial examples"):
                 eps = random.uniform(1e-5, 1.0)
                 all_adv_images.append(attack.generate_images(images[i:i+1], eps, nb_grads=10, max_iter=10))
             all_adv_images = np.concatenate(all_adv_images, axis=0)
