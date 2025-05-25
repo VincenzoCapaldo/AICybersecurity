@@ -68,7 +68,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
         correctly_classified = np.sum(y_pred == y_accepted) # campioni correttamente classificati
     else:
         correctly_classified = 0
-        print("Nessun campione è stato accettato dai detector.")
+        #print("Nessun campione è stato accettato dai detector.")
 
     # Calcolo del numero di campioni correttamente rilevati (true positive)
     correctly_detected = np.sum(np.logical_and(rejected_samples, y_adv))
@@ -264,7 +264,7 @@ def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_c
             "epsilon_step_values": [0.01],
             "max_iter_values": [1, 3, 5, 7, 10],
             "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
-            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
+            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Eps_step=0,01)",
             "x_axis_name": "Max Iterations"
         }
     }
@@ -354,7 +354,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
             "epsilon_step_values": [0.01],
             "max_iter_values": [1, 3, 5, 7, 10],
             "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
-            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Epsilon_step=0,01)",
+            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Epsilon=0,1; Eps_step=0,01)",
             "x_axis_name": "Max Iterations"
         }
     }
@@ -520,7 +520,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
             "learning_rate_values": [0.01],
             "max_iter_values": [1, 3, 5],
             "title_untargeted": f"{name} - Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Learning_rate=0,01)",
-            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Learning_rate=0,01)",
+            "title_targeted": f"{name} - Accuracy and Targeted Accuracy vs Max Iterations and Max Perturbations (Confidence=0,1; Lr=0,01)",
             "x_axis_name": "Max Iterations"
         }
     }
