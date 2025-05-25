@@ -56,7 +56,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
     # Calcolo dei campioni accettati (1 se accettati da tutti i classificatori, 0 se rifiutati da almeno un classificatore)
     accepted_samples = np.logical_not(rejected_samples)
     x_accepted = x_test[accepted_samples]
-    #print(f"Numero di campioni accettati: {x_accepted.shape[0]}")
+    #print(f"Detector {name} ha accettato {x_accepted.shape[0]} campioni")
     y_accepted = y_test[accepted_samples]
     if isinstance(y_accepted, torch.Tensor):
         y_accepted = y_accepted.cpu().numpy()
@@ -573,7 +573,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--classifier_name", type=str, default="NN1 + detectors", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
+    parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
     parser.add_argument('--generate_samples', type=bool, default=False, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
     args = parser.parse_args()
     
@@ -583,7 +583,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]  # Tipi di attacco da testare
+    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
 
     # Caricamento delle immagini clean (e delle rispettive etichette) del test set
     test_set = get_test_set()

@@ -50,10 +50,13 @@ def main():
     for attack_type in attack_types:
         # Caricamento delle immagini adversarial del test set:
         images_dir = "./dataset/test_set/adversarial_examples/" + attack_type
-        if attack_type == "df" or attack_type == "cw": # nel test set per il detector di DeepFool e Carlini vengono usati 1000 campioni adversarial untargeted:
+        if attack_type == "df" or attack_type == "cw":
+            # nel test set per il detector di DF e CW vengono usati 1000 campioni adversarial untargeted:
+            # (la versione targeted di DF non è supportata, mentre la versione targeted di CW non è efficace)
             images_dir1 = images_dir + "/untargeted/samples_plot1"
             imgs_adv = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL)
-        else: # nel test set di tutti gli altri attacchi vengono usati 1000 campioni adversarial (500 untargeted e 500 untarget):
+        else:
+            # nel test set di tutti gli altri attacchi vengono usati 1000 campioni adversarial (500 untargeted e 500 untarget):
             images_dir1 = images_dir + "/untargeted/samples_plot1"
             images_dir2 = images_dir + "/targeted/samples_plot1"
             imgs_adv1 = get_adversarial_images(images_dir1, NUM_SAMPLES_ADVERSARIAL//2)
