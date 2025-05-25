@@ -51,7 +51,7 @@ class PGD(AdversarialAttack):
         super().__init__(classifierNN1)
 
     def generate_images(self, images, epsilon, epsilon_step, max_iter, targeted=False, targeted_labels=None):
-        attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, targeted=targeted)
+        attack = ProjectedGradientDescent(estimator=self.classifierNN1, eps=epsilon, eps_step=epsilon_step, max_iter=max_iter, num_random_init=5, targeted=targeted)
         if targeted:
             # Attacco targeted:
             one_hot_targeted_labels = torch.nn.functional.one_hot(targeted_labels, NUM_CLASSES).numpy()

@@ -167,7 +167,7 @@ def plot_curve(title, x_title, legend, x, max_perturbation, accuracies, security
 
 
 # Funziona che genera i campioni adversarial FGSM (se generate_samples=True) e la relativa security evaluation curve.
-def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
+def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False, device="cpu"):
     attack_dir = "fgsm/targeted/" if targeted else "fgsm/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir + "samples_plot1"
     security_evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir + "plot1"
@@ -190,7 +190,7 @@ def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_
 
     # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
     if generate_samples:
-        attack = FGSM(setup_NN1_classifier())
+        attack = FGSM(setup_NN1_classifier(device))
         i=0
         for epsilon in plot["epsilon_values"]:
             imgs_adv = attack.generate_images(clean_images, epsilon, targeted, targeted_labels)
@@ -224,7 +224,7 @@ def run_fgsm(classifier, name, test_set, detectors=None, targeted=False, target_
 
 
 # Funziona che genera i campioni adversarial BIM (se generate_samples=True) e la relativa security evaluation curve.
-def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
+def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False, device="cpu"):
     attack_dir = "bim/targeted/" if targeted else "bim/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -273,7 +273,7 @@ def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = BIM(setup_NN1_classifier())
+            attack = BIM(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -314,7 +314,7 @@ def run_bim(classifier, name, test_set, detectors=None, targeted=False, target_c
         
 
 # Funziona che genera i campioni adversarial PGD (se generate_samples=True) e la relativa security evaluation curve.
-def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
+def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False, device="cpu"):
     attack_dir = "pgd/targeted/" if targeted else "pgd/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -363,7 +363,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = PGD(setup_NN1_classifier())
+            attack = PGD(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for epsilon_step in plot_data["epsilon_step_values"]:
@@ -404,7 +404,7 @@ def run_pgd(classifier, name, test_set, detectors=None, targeted=False, target_c
         
 
 # Funziona che genera i campioni adversarial DF (se generate_samples=True) e la relativa security evaluation curve.
-def run_df(classifier, name, test_set, detectors=None, generate_samples=False):
+def run_df(classifier, name, test_set, detectors=None, generate_samples=False, device="cpu"):
     attack_dir = "df/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -445,7 +445,7 @@ def run_df(classifier, name, test_set, detectors=None, generate_samples=False):
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = DF(setup_NN1_classifier())
+            attack = DF(setup_NN1_classifier(device))
             i=0
             for epsilon in plot_data["epsilon_values"]:
                 for nb_grads in plot_data["nb_grads_values"]:
@@ -480,7 +480,7 @@ def run_df(classifier, name, test_set, detectors=None, generate_samples=False):
        
 
 # Funziona che genera i campioni adversarial CW (se generate_samples=True) e la relativa security evaluation curve.
-def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False):
+def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_class=None, generate_samples=False, device="cpu"):
     attack_dir = "cw/targeted/" if targeted else "cw/untargeted/"
     test_set_adversarial_dir = "./dataset/test_set/adversarial_examples/" + attack_dir
     evaluation_curve_dir = "./plots/security_evaluation_curve/" + attack_dir
@@ -529,7 +529,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
         
         # Generazione e salvataggio dei campioni adversarial (se generate_samples=True)
         if generate_samples:
-            attack = CW(setup_NN1_classifier())
+            attack = CW(setup_NN1_classifier(device))
             i=0
             for confidence in plot_data["confidence_values"]:
                 for learning_rate in plot_data["learning_rate_values"]:
@@ -572,7 +572,7 @@ def run_cw(classifier, name, test_set, detectors=None, targeted=False, target_cl
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--classifier_name", type=str, default="NN1", choices=["NN1", "NN2", "NN1 + detectors"], help="Classifier to test")
-    parser.add_argument('--generate_samples', type=bool, default=False, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
+    parser.add_argument('--generate_samples', type=bool, default=True, help='true to generate the adversarial images of the test set and generate the security evaluation curves, false to only generate the security evaluation curves')
     args = parser.parse_args()
     
     classifier_name = args.classifier_name
@@ -581,7 +581,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    attack_types = ["fgsm", "bim", "pgd", "df", "cw"]
+    attack_types = ["pgd"]
 
     # Caricamento delle immagini clean (e delle rispettive etichette) del test set
     test_set = get_test_set()
@@ -626,7 +626,7 @@ def main():
         # Calcolo della targeted accuracy sulle immagini clean rispetto alle label della classe target:
         target_class_label = "Cristiano_Ronaldo"
         target_class = test_set.get_true_label(target_class_label)
-        targeted_labels = target_class * torch.ones(clean_labels.size, dtype=torch.long)
+        targeted_labels = target_class * torch.ones(len(test_set), dtype=torch.long)
         targeted_accuracy_clean = compute_accuracy_with_detectors(classifiers[0][0], clean_images, targeted_labels, adv_labels, detectors, targeted=True)
         print(f"Targeted accuracy del classificatore {classifier_name} su dati clean: {targeted_accuracy_clean:.3f}")
     else:
@@ -636,24 +636,24 @@ def main():
     # Valutazione delle performance sui campioni adversarial (security evaluation curve)
     # Attacchi untargeted:
     if "fgsm" in attack_types:
-        run_fgsm(classifiers, classifier_name, test_set, detectors, generate_samples)
+        run_fgsm(classifiers, classifier_name, test_set, detectors, generate_samples=generate_samples, device=device)
     if "bim" in attack_types:
-        run_bim(classifiers, classifier_name, test_set, detectors, generate_samples)
+        run_bim(classifiers, classifier_name, test_set, detectors, generate_samples=generate_samples, device=device)
     if "pgd" in attack_types:
-        run_pgd(classifiers, classifier_name, test_set, detectors, generate_samples)
+        run_pgd(classifiers, classifier_name, test_set, detectors, generate_samples=generate_samples, device=device)
     if "df" in attack_types:
-        run_df(classifiers, classifier_name, test_set, detectors, generate_samples)
+        run_df(classifiers, classifier_name, test_set, detectors, generate_samples=generate_samples, device=device)
     if "cw" in attack_types:
-        run_cw(classifiers, classifier_name, test_set, detectors, generate_samples)
+        run_cw(classifiers, classifier_name, test_set, detectors, generate_samples=generate_samples, device=device)
     # Attacchi targeted:
     if "fgsm" in attack_types:
-        run_fgsm(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples)
+        run_fgsm(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples, device)
     if "bim" in attack_types:
-        run_bim(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples)
+        run_bim(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples, device)
     if "pgd" in attack_types:
-        run_pgd(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples)
+        run_pgd(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples, device)
     if "cw" in attack_types:
-        run_cw(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples)
+        run_cw(classifiers, classifier_name, test_set, detectors, True, target_class, generate_samples, device)
 
 if __name__ == "__main__":
     main()
