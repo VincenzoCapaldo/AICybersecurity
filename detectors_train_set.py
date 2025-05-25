@@ -101,7 +101,7 @@ def create_train_set_adv(classifier, images, attack_types):
     untargeted_images = num_images // 2 
     targeted_images = num_images - untargeted_images
     for attack_name in attack_types:
-        # Generazione campioni adversarial fgsm al variare di epsilon (50% targeted e 50% untargeted):
+        # Generazione campioni adversarial FGSM al variare di epsilon (50% targeted e 50% untargeted):
         if attack_name == "fgsm":
             attack = FGSM(classifier)
             all_adv_images = []
@@ -115,7 +115,7 @@ def create_train_set_adv(classifier, images, attack_types):
             all_adv_images = np.concatenate(all_adv_images, axis=0)
             save_images_as_npy(all_adv_images, f"random_train_set", save_dir)
             print(f"Training adversarial examples generated and saved successfully for fgsm ({len(all_adv_images)} campioni).")
-        # Generazione campioni adversarial bim al variare di epsilon (50% targeted e 50% untargeted):
+        # Generazione campioni adversarial BIM al variare di epsilon (50% targeted e 50% untargeted):
         if attack_name == "bim":
             attack = BIM(classifier)
             all_adv_images = []
@@ -129,7 +129,7 @@ def create_train_set_adv(classifier, images, attack_types):
             all_adv_images = np.concatenate(all_adv_images, axis=0)
             save_images_as_npy(all_adv_images, f"random_train_set", save_dir)
             print(f"Training adversarial examples generated and saved successfully for bim ({len(all_adv_images)} campioni).")
-        # Generazione campioni adversarial pgd al variare di epsilon (50% targeted e 50% untargeted):
+        # Generazione campioni adversarial PGD al variare di epsilon (50% targeted e 50% untargeted):
         if attack_name == "pgd":
             attack = PGD(classifier)
             all_adv_images = []
@@ -143,7 +143,7 @@ def create_train_set_adv(classifier, images, attack_types):
             all_adv_images = np.concatenate(all_adv_images, axis=0)
             save_images_as_npy(all_adv_images, f"random_train_set", save_dir)
             print(f"Training adversarial examples generated and saved successfully for pgd ({len(all_adv_images)} campioni).")
-        # Generazione campioni adversarial df al variare di epsilon (100% untargeted perché la versione targeted di DF non è supportata):
+        # Generazione campioni adversarial DF al variare di epsilon (100% untargeted perché la versione targeted di DF non è supportata):
         if attack_name == "df":
             attack = DF(classifier)
             all_adv_images = []
@@ -154,7 +154,7 @@ def create_train_set_adv(classifier, images, attack_types):
             all_adv_images = np.concatenate(all_adv_images, axis=0)
             save_images_as_npy(all_adv_images, f"random_train_set", save_dir)
             print(f"Training adversarial examples generated and saved successfully for df ({len(all_adv_images)} campioni).")
-        # Generazione campioni adversarial cw al variare di confidence (100% untargeted perché la versione targeted di CW non è efficace):
+        # Generazione campioni adversarial CW al variare di confidence (100% untargeted perché la versione targeted di CW non è efficace):
         if attack_name == "cw":
             attack = CW(classifier)
             all_adv_images = []
