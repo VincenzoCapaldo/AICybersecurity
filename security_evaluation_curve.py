@@ -68,7 +68,7 @@ def compute_accuracy_with_detectors(classifier, x_test, y_test, y_adv, detectors
         correctly_classified = np.sum(y_pred == y_accepted) # campioni correttamente classificati
     else:
         correctly_classified = 0
-        #print("Nessun campione è stato accettato dai detector.")
+        print("Nessun campione è stato accettato dai detector.")
 
     # Calcolo del numero di campioni correttamente rilevati (true positive)
     correctly_detected = np.sum(np.logical_and(rejected_samples, y_adv))
